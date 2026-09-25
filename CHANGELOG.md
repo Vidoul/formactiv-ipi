@@ -11,3 +11,17 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
 - Initialisation du monorepo (npm workspaces `apps/*`), conventions de code (EditorConfig,
   Prettier), hooks Git (Husky, lint-staged, commitlint), environnement Docker de développement
   (PostgreSQL, Mailpit), documents de gouvernance (CONTRIBUTING, SECURITY).
+- **API — socle technique (Sprint 0)** : NestJS 11, configuration validée au démarrage,
+  en-têtes de sécurité, CORS restreint, limitation de débit, erreurs normalisées, sonde
+  `/api/v1/sante`, documentation OpenAPI générée (`/api/docs`, export YAML).
+- **Modèle de données** : schéma Prisma des 15 entités du dictionnaire de données + tables
+  techniques, migration initiale avec contraintes CHECK (RG-SESS-01/03, notes, RG-COMP-01) et
+  journal en écriture seule (trigger PostgreSQL, RG-LOG-01).
+- Jeu de données de démonstration (personas des maquettes Figma, dates relatives) et mode
+  `production` (administrateur initial).
+- Tests unitaires (Jest) et d'intégration sur base PostgreSQL réelle (Supertest).
+
+### Sécurité
+
+- Dépendances auditées : surcharge de `deepmerge-ts` (dépendance du CLI Prisma) vers la version
+  corrigée ; Nodemailer 10 et js-yaml 4.3.2 retenus pour corriger des vulnérabilités connues.

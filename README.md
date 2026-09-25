@@ -24,12 +24,24 @@ formactiv-ipi/
 Prérequis : Node.js ≥ 22.12 (voir `.nvmrc`), npm ≥ 10, Docker (ou un PostgreSQL local).
 
 ```bash
-npm install
-docker compose up -d
+npm install                              # dépendances de tout le monorepo
+docker compose up -d                     # PostgreSQL (port 5433) + Mailpit (http://localhost:8025)
+cp apps/api/.env.example apps/api/.env   # configuration de développement
+npm run db:migrate                       # migrations versionnées Prisma
+npm run db:seed                          # jeu de données de démonstration
+npm run dev:api                          # API sur http://localhost:3000/api/v1
 ```
 
-La suite des instructions (migrations, jeu de données, lancement) est complétée au fil des
-fonctionnalités livrées.
+- Documentation interactive de l'API (OpenAPI / Swagger) : <http://localhost:3000/api/docs>
+- Sonde de disponibilité : <http://localhost:3000/api/v1/sante>
+
+### Tests
+
+```bash
+npm test                 # tests unitaires (règles de gestion, sécurité)
+npm run test:e2e:api     # tests d'intégration API sur la base formactiv_test
+npm run lint && npm run typecheck
+```
 
 ## Documentation
 

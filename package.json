@@ -11,6 +11,16 @@
     "npm": ">=10"
   },
   "scripts": {
+    "dev:api": "npm run dev -w apps/api",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e:api": "npm run test:e2e -w apps/api",
+    "db:migrate": "npm run db:migrate -w apps/api",
+    "db:seed": "npm run db:seed -w apps/api",
+    "db:reset": "npm run db:reset -w apps/api",
+    "openapi:export": "npm run openapi:export -w apps/api",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"
@@ -25,5 +35,8 @@
     "husky": "9.1.7",
     "lint-staged": "16.4.0",
     "prettier": "3.9.9"
+  },
+  "overrides": {
+    "deepmerge-ts": "^8.0.0"
   }
 }
