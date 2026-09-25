@@ -31,7 +31,7 @@ import {
 const prisma = new PrismaClient();
 
 /** Mot de passe commun aux comptes de démonstration (conforme RG-AUTH-01). DEV UNIQUEMENT. */
-const MOT_DE_PASSE_DEMO = 'Formactiv#2026';
+const MOT_DE_PASSE_DEMO = 'Demo#Formactiv2026';
 const VERSION_MENTIONS = valeurParDefaut(CleParametre.RGPD_VERSION_MENTIONS);
 
 const LIBELLES_ROLES: Record<CodeRole, string> = {
