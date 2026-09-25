@@ -29,7 +29,7 @@ docker compose up -d                     # PostgreSQL (port 5433) + Mailpit (htt
 cp apps/api/.env.example apps/api/.env   # configuration de développement
 npm run db:migrate                       # migrations versionnées Prisma
 npm run db:seed                          # jeu de données de démonstration
-npm run dev:api                          # API sur http://localhost:3000/api/v1
+npm run dev                              # API (:3000) + application web (http://localhost:5173)
 ```
 
 - Documentation interactive de l'API (OpenAPI / Swagger) : <http://localhost:3000/api/docs>

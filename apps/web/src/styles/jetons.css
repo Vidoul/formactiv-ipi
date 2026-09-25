@@ -1,0 +1,82 @@
+/*
+ * Jetons de conception FORMACTIV — relevés sur les maquettes Figma (22 écrans) puis ajustés pour
+ * respecter les contrastes RGAA (critère 3.2 : 4,5:1 pour le texte courant, 3:1 pour les grands
+ * textes et composants graphiques). Ratios vérifiés : voir docs/accessibilite-rgaa.md.
+ */
+:root {
+  /* Couleurs de marque */
+  --couleur-bleu-nuit: #1b3565; /* barre latérale, titres */
+  --couleur-bleu-nuit-actif: #2c5292; /* élément de navigation actif */
+  --couleur-nav-texte: #dbe4f5;
+  --couleur-logo-accent: #3b7dd8; /* « ACTIV » (grand texte gras) */
+  --couleur-logo-accent-clair: #7fb2ff;
+
+  --couleur-primaire: #2b4c8c;
+  --couleur-primaire-survol: #213d73;
+  --couleur-lien: #245bb5;
+
+  /* Neutres */
+  --couleur-fond: #f3f5f9;
+  --couleur-surface: #ffffff;
+  --couleur-surface-alternative: #f7f9fc;
+  --couleur-bordure: #d9dee7;
+  --couleur-bordure-forte: #aeb7c6;
+  --couleur-texte: #1f2937;
+  --couleur-texte-secondaire: #4b5563;
+  --couleur-indice: #5b6778;
+  --couleur-titre: #1b3565;
+
+  /* États (toujours doublés d'un libellé : l'information n'est jamais portée par la couleur seule) */
+  --couleur-succes-texte: #1b6b35;
+  --couleur-succes-fond: #e6f4ea;
+  --couleur-succes-bordure: #9fd3ae;
+  --couleur-alerte-texte: #8a4b00;
+  --couleur-alerte-fond: #fdf1d6;
+  --couleur-alerte-bordure: #f0c878;
+  --couleur-info-texte: #1f4f9c;
+  --couleur-info-fond: #e5eefc;
+  --couleur-info-bordure: #a9c3ee;
+  --couleur-neutre-texte: #475467;
+  --couleur-neutre-fond: #eceff3;
+  --couleur-neutre-bordure: #c9d0da;
+  --couleur-danger: #b42318;
+  --couleur-danger-fond: #fdecea;
+  --couleur-danger-bordure: #f1aaa3;
+
+  /* Graphiques */
+  --couleur-graphique-bleu: #2f6fd6;
+  --couleur-graphique-vert: #1e8a4c;
+  --couleur-graphique-piste: #e3e8f0;
+
+  /* Focus visible (RGAA 10.7) */
+  --focus-anneau: #1d4ed8;
+  --focus-anneau-sombre: #ffd166;
+
+  /* Typographie : pile système (aucune police téléchargée — sobriété, ch. 8) */
+  --police: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --police-mono: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --taille-xs: 0.75rem;
+  --taille-sm: 0.8125rem;
+  --taille-base: 0.9375rem;
+  --taille-md: 1.0625rem;
+  --taille-lg: 1.375rem;
+  --taille-xl: 1.625rem;
+  --taille-indicateur: 1.75rem;
+
+  /* Espacements, rayons, ombres */
+  --espace-1: 0.25rem;
+  --espace-2: 0.5rem;
+  --espace-3: 0.75rem;
+  --espace-4: 1rem;
+  --espace-5: 1.25rem;
+  --espace-6: 1.5rem;
+  --espace-8: 2rem;
+  --rayon-sm: 4px;
+  --rayon: 8px;
+  --rayon-lg: 12px;
+  --ombre-carte: 0 1px 2px rgb(16 24 40 / 6%);
+  --ombre-elevee: 0 12px 32px rgb(16 24 40 / 18%);
+
+  --largeur-barre-laterale: 15rem;
+  --hauteur-en-tete: 3.5rem;
+}

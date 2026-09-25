@@ -25,7 +25,7 @@ une seule branche, donc une seule revue.
    | NestJS        | 11.x            | API stable, écosystème (swagger, throttler, schedule) aligné                                  |
    | Prisma        | 6.19            | client CommonJS compatible NestJS sans adaptateur de driver                                   |
    | React         | 19.x            | —                                                                                             |
-   | Vite / Vitest | 7.x / 3.x       | —                                                                                             |
+   | Vite / Vitest | 7.x / 4.1       | Vitest 4.1.11 : correctif de sécurité (GHSA-82fw-gwwq-j7x9)                                   |
    | React Router  | 7.x             | —                                                                                             |
    | Jest          | 29.x            | aligné avec ts-jest 29                                                                        |
 

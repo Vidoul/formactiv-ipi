@@ -20,6 +20,11 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
 - Jeu de données de démonstration (personas des maquettes Figma, dates relatives) et mode
   `production` (administrateur initial).
 - Tests unitaires (Jest) et d'intégration sur base PostgreSQL réelle (Supertest).
+- **Web — socle (Sprint 0)** : React 19 + Vite 7, design system issu des maquettes Figma
+  (contrastes RGAA vérifiés), composants accessibles (champs, tableaux, graphiques avec
+  alternative textuelle, dialogues, notifications), gabarit par rôle (lien d'évitement, fil
+  d'Ariane, focus au changement de page), client API (jeton en mémoire, rafraîchissement unique),
+  pages Aide, Déclaration d'accessibilité et Protection des données ; tests Vitest.
 
 ### Sécurité
 
