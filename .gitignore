@@ -1,0 +1,35 @@
+# Dépendances
+node_modules/
+
+# Builds
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Environnements (les secrets ne sont JAMAIS versionnés — cf. SECURITY.md)
+.env
+.env.*
+!.env.example
+
+# Stockage local des documents générés (DEV)
+storage/
+
+# Tests E2E
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Journaux
+logs/
+*.log
+npm-debug.log*
+
+# Éditeurs / OS
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
