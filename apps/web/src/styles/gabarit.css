@@ -169,7 +169,8 @@
 }
 
 /* --- Menu mobile ----------------------------------------------------------- */
-.bouton-menu {
+/* Sélecteur plus spécifique que .bouton (composants.css) pour masquer le bouton sur grand écran. */
+.en-tete .bouton-menu {
   display: none;
 }
 
@@ -189,7 +190,7 @@
     transform: none;
     box-shadow: var(--ombre-elevee);
   }
-  .bouton-menu {
+  .en-tete .bouton-menu {
     display: inline-flex;
   }
   .en-tete {

@@ -35,6 +35,23 @@ npm run dev                              # API (:3000) + application web (http:/
 - Documentation interactive de l'API (OpenAPI / Swagger) : <http://localhost:3000/api/docs>
 - Sonde de disponibilité : <http://localhost:3000/api/v1/sante>
 
+### Comptes de démonstration
+
+Jeu de données fictif (personas des maquettes), mot de passe commun **`Demo#Formactiv2026`** :
+
+| Profil                | Email                    |
+| --------------------- | ------------------------ |
+| Administrateur        | `a.dupre@formactiv.fr`   |
+| Responsable formation | `nadia.rey@formactiv.fr` |
+| Formateur             | `k.selle@formactiv.fr`   |
+| Apprenant             | `lea.martin@mail.fr`     |
+| Client entreprise     | `t.morel@oxalys.fr`      |
+
+La double authentification est **obligatoire** pour l'administrateur et le responsable formation
+(RG-AUTH-03) : à la première connexion, scannez le QR code avec une application TOTP, ou affichez
+le code courant d'une clé avec `npm run totp -w apps/api -- <CLÉ>`.
+Les emails (réinitialisation, activation) sont visibles dans Mailpit : <http://localhost:8025>.
+
 ### Tests
 
 ```bash

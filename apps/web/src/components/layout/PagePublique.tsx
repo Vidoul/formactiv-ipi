@@ -1,8 +1,10 @@
 import { useEffect, type ReactNode } from 'react';
 import { Link } from 'react-router';
+import { useAuth } from '../../auth/ContexteAuth';
 
 /** Gabarit des pages d'information publiques (aide, accessibilité, confidentialité). */
 export function PagePublique({ titre, children }: { titre: string; children: ReactNode }) {
+  const { etat } = useAuth();
   useEffect(() => {
     document.title = `${titre} — FORMACTIV`;
   }, [titre]);
@@ -16,7 +18,11 @@ export function PagePublique({ titre, children }: { titre: string; children: Rea
         <Link to="/" className="logo" aria-label="FORMACTIV — accueil">
           FORM<span className="logo__accent">ACTIV</span>
         </Link>
-        <Link to="/connexion">Se connecter</Link>
+        {etat.statut === 'connecte' ? (
+          <Link to="/">Retour à mon espace</Link>
+        ) : (
+          <Link to="/connexion">Se connecter</Link>
+        )}
       </header>
       <main
         id="contenu"

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { ErreurApi } from './api/client';
+import { FournisseurAuth } from './auth/ContexteAuth';
 import { FournisseurNotifications } from './components/ui';
 import { routes } from './routes';
 
@@ -26,7 +27,9 @@ export function App() {
   return (
     <QueryClientProvider client={clientRequetes}>
       <FournisseurNotifications>
-        <RouterProvider router={routeur} />
+        <FournisseurAuth>
+          <RouterProvider router={routeur} />
+        </FournisseurAuth>
       </FournisseurNotifications>
     </QueryClientProvider>
   );
