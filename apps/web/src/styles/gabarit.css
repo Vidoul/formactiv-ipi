@@ -1,0 +1,256 @@
+/* Gabarit général (écran Figma 03) : barre latérale par domaine, en-tête avec fil d'Ariane et
+   profil, zone de contenu. Responsive : la barre latérale devient un menu repliable < 900px. */
+
+.gabarit {
+  display: grid;
+  grid-template-columns: var(--largeur-barre-laterale) 1fr;
+  min-height: 100vh;
+}
+
+/* --- Barre latérale ------------------------------------------------------ */
+.barre-laterale {
+  display: flex;
+  flex-direction: column;
+  background: var(--couleur-bleu-nuit);
+  color: var(--couleur-nav-texte);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.barre-laterale :focus-visible {
+  outline-color: var(--focus-anneau-sombre);
+}
+.barre-laterale__marque {
+  padding: var(--espace-5) var(--espace-4) var(--espace-4);
+}
+.barre-laterale__espace {
+  display: block;
+  font-size: var(--taille-xs);
+  color: var(--couleur-nav-texte);
+  margin-top: var(--espace-1);
+}
+.barre-laterale nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.barre-laterale__lien {
+  display: block;
+  padding: var(--espace-2) var(--espace-4);
+  color: var(--couleur-nav-texte);
+  text-decoration: none;
+  font-size: var(--taille-sm);
+  border-left: 3px solid transparent;
+}
+.barre-laterale__lien:hover {
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+}
+.barre-laterale__lien[aria-current='page'] {
+  background: var(--couleur-bleu-nuit-actif);
+  color: #fff;
+  font-weight: 600;
+  border-left-color: var(--couleur-logo-accent-clair);
+}
+.barre-laterale__bas {
+  margin-top: auto;
+  padding-bottom: var(--espace-4);
+  border-top: 1px solid rgb(255 255 255 / 12%);
+}
+.barre-laterale__bouton {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* --- Logo ------------------------------------------------------------------ */
+.logo {
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+  color: var(--couleur-titre);
+  text-decoration: none;
+}
+.logo__accent {
+  color: var(--couleur-logo-accent);
+}
+.barre-laterale .logo {
+  color: #fff;
+}
+.barre-laterale .logo__accent {
+  color: var(--couleur-logo-accent-clair);
+}
+
+/* --- Zone principale ------------------------------------------------------- */
+.zone-principale {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.en-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-4);
+  min-height: var(--hauteur-en-tete);
+  padding: 0 var(--espace-6);
+  background: var(--couleur-surface);
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+.fil-ariane ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espace-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--taille-sm);
+  color: var(--couleur-texte-secondaire);
+}
+.fil-ariane li + li::before {
+  content: '/';
+  margin-right: var(--espace-1);
+  color: var(--couleur-indice);
+}
+.fil-ariane a {
+  color: var(--couleur-texte-secondaire);
+}
+.contenu {
+  padding: var(--espace-6);
+  max-width: 90rem;
+  width: 100%;
+}
+.contenu:focus {
+  outline: none;
+}
+
+/* --- Profil ---------------------------------------------------------------- */
+.profil {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  font-size: var(--taille-sm);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: var(--espace-1) var(--espace-2);
+  border-radius: var(--rayon);
+}
+.profil:hover {
+  background: var(--couleur-surface-alternative);
+}
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--couleur-primaire);
+  color: #fff;
+  font-size: var(--taille-xs);
+  font-weight: 700;
+}
+
+/* --- En-tête de page --------------------------------------------------------- */
+.en-tete-page {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espace-4);
+  margin-bottom: var(--espace-5);
+}
+.en-tete-page__sous-titre {
+  color: var(--couleur-texte-secondaire);
+  margin: 0;
+}
+
+/* --- Menu mobile ----------------------------------------------------------- */
+.bouton-menu {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .gabarit {
+    grid-template-columns: 1fr;
+  }
+  .barre-laterale {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(18rem, 85vw);
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  .barre-laterale[data-ouverte='true'] {
+    transform: none;
+    box-shadow: var(--ombre-elevee);
+  }
+  .bouton-menu {
+    display: inline-flex;
+  }
+  .en-tete {
+    padding: 0 var(--espace-4);
+  }
+  .contenu {
+    padding: var(--espace-4);
+  }
+}
+
+/* --- Pages d'authentification (écrans Figma 01 et 02) ------------------------- */
+.page-auth {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--espace-6) var(--espace-4);
+  background: linear-gradient(160deg, #1b3565 0%, #2b579e 100%);
+}
+.carte-auth {
+  width: min(26rem, 100%);
+  background: var(--couleur-surface);
+  border-radius: var(--rayon-lg);
+  box-shadow: var(--ombre-elevee);
+  padding: var(--espace-8) var(--espace-6);
+}
+.carte-auth__entete {
+  text-align: center;
+  margin-bottom: var(--espace-5);
+}
+.carte-auth__entete .logo {
+  font-size: 1.5rem;
+}
+.carte-auth__sous-titre {
+  color: var(--couleur-texte-secondaire);
+  font-size: var(--taille-sm);
+  margin: var(--espace-1) 0 0;
+}
+.carte-auth__separateur {
+  border: 0;
+  border-top: 1px solid var(--couleur-bordure);
+  margin: var(--espace-5) 0;
+}
+.carte-auth__lien {
+  display: block;
+  text-align: center;
+  margin-top: var(--espace-3);
+  font-size: var(--taille-sm);
+}
+.etapes {
+  display: flex;
+  gap: var(--espace-2);
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--espace-5);
+}
+.etapes li {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--couleur-graphique-piste);
+}
+.etapes li[data-faite='true'] {
+  background: var(--couleur-primaire);
+}

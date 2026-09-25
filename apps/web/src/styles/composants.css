@@ -1,0 +1,553 @@
+/* Composants d'interface (bibliothèque maison accessible, ch. 8 / ch. 11). */
+
+/* --- Grilles utilitaires ----------------------------------------------------- */
+.grille {
+  display: grid;
+  gap: var(--espace-4);
+}
+.grille--2 {
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+}
+.grille--2-1 {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+.grille--indicateurs {
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+}
+.pile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-4);
+}
+.rangee {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espace-2);
+}
+.rangee--fin {
+  justify-content: flex-end;
+}
+@media (max-width: 1100px) {
+  .grille--2-1 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Cartes ---------------------------------------------------------------- */
+.carte {
+  background: var(--couleur-surface);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre-carte);
+  padding: var(--espace-5);
+  min-width: 0;
+}
+.carte__titre {
+  font-size: var(--taille-base);
+  margin-bottom: var(--espace-3);
+}
+.carte__legende {
+  font-size: var(--taille-xs);
+  color: var(--couleur-indice);
+  margin-bottom: var(--espace-2);
+}
+
+/* --- Indicateurs (cartes KPI) ------------------------------------------------ */
+.indicateur__valeur {
+  display: block;
+  font-size: var(--taille-indicateur);
+  font-weight: 700;
+  color: var(--couleur-titre);
+  line-height: 1.1;
+}
+.indicateur__libelle {
+  display: block;
+  font-size: var(--taille-sm);
+  color: var(--couleur-texte-secondaire);
+  margin-top: var(--espace-1);
+}
+.indicateur__tendance {
+  display: block;
+  font-size: var(--taille-xs);
+  margin-top: var(--espace-1);
+}
+.indicateur__tendance--positive {
+  color: var(--couleur-succes-texte);
+}
+.indicateur__tendance--negative {
+  color: var(--couleur-danger);
+}
+
+/* --- Boutons --------------------------------------------------------------- */
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espace-2);
+  min-height: 2.25rem; /* cible tactile confortable */
+  padding: var(--espace-2) var(--espace-4);
+  border-radius: var(--rayon-sm);
+  border: 1px solid var(--couleur-primaire);
+  font-size: var(--taille-sm);
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.bouton:disabled,
+.bouton[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.bouton--primaire {
+  background: var(--couleur-primaire);
+  color: #fff;
+}
+.bouton--primaire:hover:not(:disabled) {
+  background: var(--couleur-primaire-survol);
+}
+.bouton--secondaire {
+  background: var(--couleur-surface);
+  color: var(--couleur-primaire);
+}
+.bouton--secondaire:hover:not(:disabled) {
+  background: var(--couleur-info-fond);
+}
+.bouton--danger {
+  background: var(--couleur-surface);
+  color: var(--couleur-danger);
+  border-color: var(--couleur-danger);
+}
+.bouton--danger:hover:not(:disabled) {
+  background: var(--couleur-danger-fond);
+}
+.bouton--lien {
+  border-color: transparent;
+  background: none;
+  color: var(--couleur-lien);
+  text-decoration: underline;
+  padding-inline: var(--espace-1);
+}
+.bouton--petit {
+  min-height: 1.875rem;
+  padding: var(--espace-1) var(--espace-3);
+  font-size: var(--taille-xs);
+}
+.bouton--bloc {
+  width: 100%;
+}
+
+/* --- Badges de statut ------------------------------------------------------ */
+.badge {
+  display: inline-block;
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: var(--taille-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge--succes {
+  color: var(--couleur-succes-texte);
+  background: var(--couleur-succes-fond);
+  border-color: var(--couleur-succes-bordure);
+}
+.badge--alerte {
+  color: var(--couleur-alerte-texte);
+  background: var(--couleur-alerte-fond);
+  border-color: var(--couleur-alerte-bordure);
+}
+.badge--info {
+  color: var(--couleur-info-texte);
+  background: var(--couleur-info-fond);
+  border-color: var(--couleur-info-bordure);
+}
+.badge--neutre {
+  color: var(--couleur-neutre-texte);
+  background: var(--couleur-neutre-fond);
+  border-color: var(--couleur-neutre-bordure);
+}
+.badge--danger {
+  color: var(--couleur-danger);
+  background: var(--couleur-danger-fond);
+  border-color: var(--couleur-danger-bordure);
+}
+
+/* --- Champs de formulaire (RGAA 11) ------------------------------------------ */
+.champ {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-1);
+  margin-bottom: var(--espace-4);
+  min-width: 0;
+}
+.champ__libelle {
+  font-size: var(--taille-sm);
+  font-weight: 600;
+  color: var(--couleur-texte);
+}
+.champ__obligatoire {
+  color: var(--couleur-danger);
+}
+.champ__saisie {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: var(--espace-2) var(--espace-3);
+  border: 1px solid var(--couleur-bordure-forte);
+  border-radius: var(--rayon-sm);
+  background: var(--couleur-surface);
+}
+.champ__saisie:disabled {
+  background: var(--couleur-neutre-fond);
+}
+.champ__saisie[aria-invalid='true'] {
+  border-color: var(--couleur-danger);
+  border-width: 2px;
+}
+textarea.champ__saisie {
+  min-height: 5rem;
+  resize: vertical;
+}
+.champ__indice {
+  font-size: var(--taille-xs);
+  color: var(--couleur-indice);
+  margin: 0;
+}
+.champ__erreur {
+  font-size: var(--taille-xs);
+  color: var(--couleur-danger);
+  font-weight: 600;
+  margin: 0;
+}
+.case {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espace-2);
+  font-size: var(--taille-sm);
+  margin-bottom: var(--espace-3);
+}
+.case input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.125rem;
+  accent-color: var(--couleur-primaire);
+}
+.formulaire-ligne {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+  gap: 0 var(--espace-4);
+}
+fieldset.groupe {
+  border: 0;
+  margin: 0 0 var(--espace-4);
+  padding: 0;
+}
+fieldset.groupe legend {
+  font-size: var(--taille-sm);
+  font-weight: 600;
+  margin-bottom: var(--espace-2);
+}
+
+/* --- Barre de filtres ------------------------------------------------------ */
+.filtres {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espace-3);
+  margin-bottom: var(--espace-4);
+}
+.filtres .champ {
+  margin-bottom: 0;
+  min-width: 11rem;
+}
+
+/* --- Tableaux de données (RGAA 5) ---------------------------------------------- */
+.tableau-conteneur {
+  overflow-x: auto;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-sm);
+}
+.tableau {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--taille-sm);
+}
+.tableau caption {
+  text-align: left;
+  font-size: var(--taille-xs);
+  color: var(--couleur-indice);
+  padding: var(--espace-2) var(--espace-3);
+  caption-side: top;
+}
+.tableau th,
+.tableau td {
+  padding: var(--espace-2) var(--espace-3);
+  text-align: left;
+  border-bottom: 1px solid var(--couleur-bordure);
+  vertical-align: middle;
+}
+.tableau thead th {
+  background: var(--couleur-info-fond);
+  color: var(--couleur-titre);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tableau tbody tr:last-child td,
+.tableau tbody tr:last-child th {
+  border-bottom: 0;
+}
+.tableau tbody tr:hover {
+  background: var(--couleur-surface-alternative);
+}
+.tableau__nombre {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+.tableau__mono {
+  font-family: var(--police-mono);
+  font-size: var(--taille-xs);
+}
+.tableau .champ__saisie {
+  min-height: 2rem;
+  max-width: 5.5rem;
+  padding: var(--espace-1) var(--espace-2);
+}
+
+/* --- Pagination ------------------------------------------------------------ */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-3);
+  margin-top: var(--espace-3);
+  font-size: var(--taille-sm);
+  color: var(--couleur-texte-secondaire);
+}
+
+/* --- Graphiques ------------------------------------------------------------- */
+.graphique-barres {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.graphique-barres text {
+  font-family: var(--police);
+  fill: var(--couleur-texte-secondaire);
+  font-size: 11px;
+}
+.graphique-barres .graphique-barres__valeur {
+  fill: var(--couleur-texte);
+  font-weight: 600;
+}
+.legende {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  font-size: var(--taille-xs);
+  color: var(--couleur-texte-secondaire);
+  margin-top: var(--espace-2);
+}
+.legende__pastille {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 2px;
+  background: var(--couleur-graphique-bleu);
+}
+.legende__pastille--vert {
+  background: var(--couleur-graphique-vert);
+}
+
+/* Barres de progression horizontales (taux par formation, progression apprenant). */
+.progression {
+  margin-bottom: var(--espace-3);
+}
+.progression__entete {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espace-2);
+  font-size: var(--taille-sm);
+  margin-bottom: var(--espace-1);
+}
+.progression__valeur {
+  color: var(--couleur-texte-secondaire);
+  white-space: nowrap;
+}
+.progression__piste {
+  height: 0.625rem;
+  border-radius: 999px;
+  background: var(--couleur-graphique-piste);
+  overflow: hidden;
+}
+.progression__barre {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--couleur-graphique-bleu);
+}
+.progression__barre--vert {
+  background: var(--couleur-graphique-vert);
+}
+
+/* --- Messages ---------------------------------------------------------------- */
+.alerte {
+  border: 1px solid;
+  border-left-width: 4px;
+  border-radius: var(--rayon-sm);
+  padding: var(--espace-3) var(--espace-4);
+  font-size: var(--taille-sm);
+  margin-bottom: var(--espace-4);
+}
+.alerte p:last-child {
+  margin-bottom: 0;
+}
+.alerte--info {
+  color: var(--couleur-info-texte);
+  background: var(--couleur-info-fond);
+  border-color: var(--couleur-info-bordure);
+}
+.alerte--succes {
+  color: var(--couleur-succes-texte);
+  background: var(--couleur-succes-fond);
+  border-color: var(--couleur-succes-bordure);
+}
+.alerte--alerte {
+  color: var(--couleur-alerte-texte);
+  background: var(--couleur-alerte-fond);
+  border-color: var(--couleur-alerte-bordure);
+}
+.alerte--erreur {
+  color: var(--couleur-danger);
+  background: var(--couleur-danger-fond);
+  border-color: var(--couleur-danger-bordure);
+}
+.note {
+  font-size: var(--taille-xs);
+  color: var(--couleur-indice);
+  margin: var(--espace-3) 0 0;
+}
+
+.etat-vide {
+  text-align: center;
+  padding: var(--espace-8) var(--espace-4);
+  color: var(--couleur-texte-secondaire);
+}
+.etat-vide__titre {
+  font-weight: 600;
+  color: var(--couleur-titre);
+  margin-bottom: var(--espace-2);
+}
+
+.chargement {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-2);
+  padding: var(--espace-4);
+  color: var(--couleur-texte-secondaire);
+  font-size: var(--taille-sm);
+}
+.chargement__roue {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--couleur-bordure);
+  border-top-color: var(--couleur-primaire);
+  border-radius: 50%;
+  animation: tourner 0.8s linear infinite;
+}
+@keyframes tourner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Notifications (zone live) ------------------------------------------------- */
+.notifications {
+  position: fixed;
+  right: var(--espace-4);
+  bottom: var(--espace-4);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-2);
+  max-width: min(24rem, calc(100vw - 2rem));
+}
+.notification {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espace-3);
+  padding: var(--espace-3) var(--espace-4);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre-elevee);
+  background: var(--couleur-surface);
+  border: 1px solid var(--couleur-bordure);
+  border-left: 4px solid var(--couleur-succes-texte);
+  font-size: var(--taille-sm);
+}
+.notification--erreur {
+  border-left-color: var(--couleur-danger);
+}
+
+/* --- Dialogues modaux (Radix, motif ARIA dialog) ----------------------------- */
+.dialogue__voile {
+  position: fixed;
+  inset: 0;
+  background: rgb(15 23 42 / 45%);
+  z-index: 100;
+}
+.dialogue {
+  position: fixed;
+  z-index: 101;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  background: var(--couleur-surface);
+  border-radius: var(--rayon-lg);
+  box-shadow: var(--ombre-elevee);
+  padding: var(--espace-6);
+}
+.dialogue--large {
+  width: min(44rem, calc(100vw - 2rem));
+}
+.dialogue__titre {
+  font-size: var(--taille-md);
+  margin-bottom: var(--espace-2);
+}
+.dialogue__description {
+  color: var(--couleur-texte-secondaire);
+  font-size: var(--taille-sm);
+}
+.dialogue__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--espace-2);
+  margin-top: var(--espace-5);
+}
+
+/* --- Liste de définitions (fiches) -------------------------------------------- */
+.definitions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espace-3);
+  margin: 0 0 var(--espace-4);
+}
+.definitions dt {
+  font-size: var(--taille-xs);
+  color: var(--couleur-indice);
+}
+.definitions dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+.etiquettes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espace-2);
+  list-style: none;
+  margin: 0 0 var(--espace-3);
+  padding: 0;
+}
