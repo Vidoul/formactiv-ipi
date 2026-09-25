@@ -2,6 +2,7 @@ import {
   useId,
   type InputHTMLAttributes,
   type ReactNode,
+  type Ref,
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from 'react';
@@ -72,7 +73,7 @@ export function ChampTexte({
   className,
   id: idFourni,
   ...saisie
-}: ProprietesCommunes & InputHTMLAttributes<HTMLInputElement>) {
+}: ProprietesCommunes & InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
   const idGenere = useId();
   const id = idFourni ?? idGenere;
   const { decrit } = useDescriptions(id, indice, erreur);

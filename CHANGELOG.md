@@ -25,6 +25,12 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
   alternative textuelle, dialogues, notifications), gabarit par rôle (lien d'évitement, fil
   d'Ariane, focus au changement de page), client API (jeton en mémoire, rafraîchissement unique),
   pages Aide, Déclaration d'accessibilité et Protection des données ; tests Vitest.
+- **Lot 1 — Authentification (US-03/04/05, UC-01/02)** : connexion avec verrouillage
+  temporaire (RG-AUTH-02), double authentification TOTP obligatoire par rôle (RG-AUTH-03),
+  JWT 15 min + refresh token rotatif révocable, réinitialisation par lien à usage unique
+  (RG-AUTH-04), activation de compte avec consentement explicite (RG-RGPD-01), politique de
+  mot de passe (RG-AUTH-01), gardes RBAC en refus par défaut ; écrans de connexion, MFA,
+  mot de passe oublié, réinitialisation, activation et sécurité du compte.
 
 ### Sécurité
 
