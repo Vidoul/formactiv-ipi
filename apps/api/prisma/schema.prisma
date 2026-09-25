@@ -1,0 +1,467 @@
+// =============================================================================
+// FORMACTIV — Modèle de données (dossier de conception, chapitre 6)
+//
+// Les noms de tables et de colonnes reprennent À L'IDENTIQUE le MLD et le
+// dictionnaire de données (contrat de nommage du chapitre 5). Les modèles Prisma
+// exposent ces colonnes en camelCase côté TypeScript (@map).
+//
+// Tables métier (15)  : role, entreprise_cliente, utilisateur, formation,
+//   competence, formation_competence, session, animation, inscription,
+//   evaluation, document, reponse_satisfaction, consentement, demande_rgpd,
+//   journal_action.
+// Tables techniques   : jeton_refresh (JWT refresh révocable, ch. 10),
+//   jeton_usage_unique (liens de réinitialisation / activation, RG-AUTH-04),
+//   parametre (paramètres plateforme, matrice RBAC ch. 5).
+//
+// Contraintes CHECK et immutabilité du journal : voir la migration initiale
+// (non exprimables dans le langage Prisma).
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// Énumérations (valeurs du dictionnaire de données)
+// ----------------------------------------------------------------------------
+
+enum CodeRole {
+  ADMIN
+  RESP_FORMATION
+  FORMATEUR
+  APPRENANT
+  CLIENT_ENTREPRISE
+}
+
+enum StatutCompte {
+  ACTIF
+  VERROUILLE
+  DESACTIVE
+  ANONYMISE
+}
+
+enum Modalite {
+  PRESENTIEL
+  DISTANCIEL
+  HYBRIDE
+}
+
+enum StatutFormation {
+  BROUILLON
+  PUBLIEE
+  ARCHIVEE
+}
+
+enum TypeReferentiel {
+  RNCP
+  INTERNE
+}
+
+enum StatutInscription {
+  EN_ATTENTE
+  VALIDEE
+  ANNULEE
+  TERMINEE
+}
+
+enum TypeDocument {
+  ATTESTATION
+  CERTIFICAT
+}
+
+enum TypeDemandeRgpd {
+  ACCES
+  RECTIFICATION
+  SUPPRESSION
+}
+
+enum StatutDemandeRgpd {
+  RECUE
+  EN_COURS
+  TRAITEE
+  REFUSEE
+}
+
+enum FinaliteConsentement {
+  GESTION_COMPTE
+  QUESTIONNAIRES_SATISFACTION
+}
+
+enum TypeJeton {
+  REINITIALISATION
+  ACTIVATION
+}
+
+// ----------------------------------------------------------------------------
+// Comptes, rôles, entreprises (REQ-FUNC-001..005, REQ-FUNC-018)
+// ----------------------------------------------------------------------------
+
+/// Rôle applicatif (RG-CPT-01 : un rôle principal par compte). Table dédiée
+/// plutôt qu'énumération figée pour permettre l'évolution V2.
+model Role {
+  id           String        @id @default(uuid()) @map("id_role") @db.Uuid
+  code         CodeRole      @unique
+  libelle      String        @db.VarChar(50)
+  utilisateurs Utilisateur[]
+
+  @@map("role")
+}
+
+/// Entreprise cliente (REQ-FUNC-018). Rattache les apprenants salariés (H2)
+/// et est représentée par les comptes Client entreprise.
+model EntrepriseCliente {
+  id            String        @id @default(uuid()) @map("id_entreprise") @db.Uuid
+  raisonSociale String        @map("raison_sociale") @db.VarChar(150)
+  siret         String?       @unique @db.VarChar(14)
+  emailContact  String        @map("email_contact") @db.VarChar(255)
+  dateCreation  DateTime      @default(now()) @map("date_creation") @db.Timestamptz(3)
+  utilisateurs  Utilisateur[]
+
+  @@map("entreprise_cliente")
+}
+
+/// Compte utilisateur des 5 profils. Minimisation RGPD (RG-RGPD-03) : ni date de
+/// naissance, ni adresse, ni téléphone.
+model Utilisateur {
+  id                    String       @id @default(uuid()) @map("id_utilisateur") @db.Uuid
+  nom                   String       @db.VarChar(100)
+  prenom                String       @db.VarChar(100)
+  email                 String       @unique @db.VarChar(255)
+  /// Argon2id — jamais stocké en clair (REQ-SEC-001). Null tant que le compte n'est pas activé.
+  motDePasseHash        String?      @map("mot_de_passe_hash")
+  mfaActive             Boolean      @default(false) @map("mfa_active")
+  /// Secret TOTP chiffré AES-256-GCM (clé hors base).
+  mfaSecretChiffre      String?      @map("mfa_secret_chiffre")
+  /// Dernier pas de temps TOTP accepté : empêche le rejeu d'un même code.
+  mfaDernierPas         Int?         @map("mfa_dernier_pas")
+  statutCompte          StatutCompte @default(ACTIF) @map("statut_compte")
+  /// Compteur d'échecs de connexion consécutifs (RG-AUTH-02).
+  tentativesEchouees    Int          @default(0) @map("tentatives_echouees")
+  verrouilleJusquA      DateTime?    @map("verrouille_jusqu_a") @db.Timestamptz(3)
+  dateDerniereConnexion DateTime?    @map("date_derniere_connexion") @db.Timestamptz(3)
+  dateCreation          DateTime     @default(now()) @map("date_creation") @db.Timestamptz(3)
+  dateModification      DateTime     @updatedAt @map("date_modification") @db.Timestamptz(3)
+  roleId                String       @map("id_role") @db.Uuid
+  entrepriseId          String?      @map("id_entreprise") @db.Uuid
+
+  role       Role               @relation(fields: [roleId], references: [id])
+  entreprise EntrepriseCliente? @relation(fields: [entrepriseId], references: [id])
+
+  animations         Animation[]
+  inscriptions       Inscription[]
+  evaluationsSaisies Evaluation[]       @relation("EvaluationFormateur")
+  documentsEmis      Document[]         @relation("DocumentEmetteur")
+  consentements      Consentement[]
+  demandesRgpd       DemandeRgpd[]      @relation("DemandeDemandeur")
+  demandesTraitees   DemandeRgpd[]      @relation("DemandeTraitant")
+  journal            JournalAction[]
+  jetonsRefresh      JetonRefresh[]
+  jetonsUsageUnique  JetonUsageUnique[]
+
+  @@index([roleId])
+  @@index([entrepriseId])
+  @@index([statutCompte])
+  @@map("utilisateur")
+}
+
+// ----------------------------------------------------------------------------
+// Catalogue : formations et compétences (REQ-FUNC-006/007)
+// ----------------------------------------------------------------------------
+
+/// Formation du catalogue (RG-FORM-01..03).
+model Formation {
+  id               String          @id @default(uuid()) @map("id_formation") @db.Uuid
+  intitule         String          @db.VarChar(200)
+  dureeHeures      Int             @map("duree_heures")
+  modalite         Modalite
+  /// Obligatoire ; vaut « Aucun » en l'absence de prérequis (RG-FORM-01).
+  prerequis        String
+  statut           StatutFormation @default(BROUILLON)
+  /// Seuil d'acquisition des compétences sur 20 (RG-EVAL-02, défaut 10 — [À VALIDER]).
+  seuilAcquisition Decimal         @default(10) @map("seuil_acquisition") @db.Decimal(4, 2)
+  dateCreation     DateTime        @default(now()) @map("date_creation") @db.Timestamptz(3)
+  dateModification DateTime        @updatedAt @map("date_modification") @db.Timestamptz(3)
+
+  competences FormationCompetence[]
+  sessions    Session[]
+
+  @@index([statut])
+  @@map("formation")
+}
+
+/// Compétence d'un référentiel RNCP ou interne (RG-COMP-01).
+model Competence {
+  id              String          @id @default(uuid()) @map("id_competence") @db.Uuid
+  libelle         String          @db.VarChar(200)
+  typeReferentiel TypeReferentiel @map("type_referentiel")
+  /// Obligatoire si le référentiel est RNCP (contrainte CHECK).
+  codeRncp        String?         @map("code_rncp") @db.VarChar(20)
+
+  formations  FormationCompetence[]
+  evaluations Evaluation[]
+
+  /// Libellé unique au sein d'un référentiel (RG-COMP-01).
+  @@unique([typeReferentiel, libelle])
+  @@map("competence")
+}
+
+/// Association VISER : compétences visées par une formation (RG-FORM-02).
+model FormationCompetence {
+  formationId  String @map("id_formation") @db.Uuid
+  competenceId String @map("id_competence") @db.Uuid
+
+  formation  Formation  @relation(fields: [formationId], references: [id], onDelete: Cascade)
+  competence Competence @relation(fields: [competenceId], references: [id], onDelete: Restrict)
+
+  @@id([formationId, competenceId])
+  @@index([competenceId])
+  @@map("formation_competence")
+}
+
+// ----------------------------------------------------------------------------
+// Sessions, affectations, inscriptions (REQ-FUNC-008..010)
+// ----------------------------------------------------------------------------
+
+/// Session datée d'une formation (RG-SESS-01..03).
+model Session {
+  id               String   @id @default(uuid()) @map("id_session") @db.Uuid
+  formationId      String   @map("id_formation") @db.Uuid
+  dateDebut        DateTime @map("date_debut") @db.Date
+  /// date_fin >= date_debut (contrainte CHECK, RG-SESS-01).
+  dateFin          DateTime @map("date_fin") @db.Date
+  /// Capacité maximale optionnelle (RG-SESS-03, [À VALIDER]).
+  capaciteMax      Int?     @map("capacite_max")
+  /// Lieu de la session (maquette « Mes sessions ») — donnée non personnelle.
+  lieu             String?  @db.VarChar(150)
+  dateCreation     DateTime @default(now()) @map("date_creation") @db.Timestamptz(3)
+  dateModification DateTime @updatedAt @map("date_modification") @db.Timestamptz(3)
+
+  formation    Formation     @relation(fields: [formationId], references: [id], onDelete: Restrict)
+  animations   Animation[]
+  inscriptions Inscription[]
+
+  @@index([formationId])
+  @@index([dateDebut, dateFin])
+  @@map("session")
+}
+
+/// Association ANIMER : formateurs affectés à une session (RG-SESS-02).
+model Animation {
+  sessionId       String   @map("id_session") @db.Uuid
+  formateurId     String   @map("id_formateur") @db.Uuid
+  dateAffectation DateTime @default(now()) @map("date_affectation") @db.Timestamptz(3)
+
+  session   Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  formateur Utilisateur @relation(fields: [formateurId], references: [id], onDelete: Restrict)
+
+  @@id([sessionId, formateurId])
+  @@index([formateurId])
+  @@map("animation")
+}
+
+/// Inscription d'un apprenant à une session (RG-INSC-01..03).
+model Inscription {
+  id                String            @id @default(uuid()) @map("id_inscription") @db.Uuid
+  apprenantId       String            @map("id_apprenant") @db.Uuid
+  sessionId         String            @map("id_session") @db.Uuid
+  statut            StatutInscription @default(EN_ATTENTE)
+  dateInscription   DateTime          @default(now()) @map("date_inscription") @db.Timestamptz(3)
+  /// Prérequis de la formation vérifiés par le responsable (RG-INSC-03).
+  prerequisVerifies Boolean           @default(false) @map("prerequis_verifies")
+  dateModification  DateTime          @updatedAt @map("date_modification") @db.Timestamptz(3)
+
+  apprenant           Utilisateur          @relation(fields: [apprenantId], references: [id], onDelete: Restrict)
+  session             Session              @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  evaluations         Evaluation[]
+  documents           Document[]
+  reponseSatisfaction ReponseSatisfaction?
+
+  /// Un apprenant n'est inscrit qu'une fois à une même session (RG-INSC-01).
+  @@unique([apprenantId, sessionId])
+  @@index([sessionId, statut])
+  @@index([statut])
+  @@map("inscription")
+}
+
+// ----------------------------------------------------------------------------
+// Évaluations, documents, satisfaction (REQ-FUNC-011..015)
+// ----------------------------------------------------------------------------
+
+/// Note d'un apprenant sur une compétence (RG-EVAL-01/02).
+model Evaluation {
+  id            String   @id @default(uuid()) @map("id_evaluation") @db.Uuid
+  inscriptionId String   @map("id_inscription") @db.Uuid
+  competenceId  String   @map("id_competence") @db.Uuid
+  /// Note sur 20 (contrainte CHECK 0..20).
+  note          Decimal  @db.Decimal(4, 2)
+  /// Calculé : note >= seuil d'acquisition de la formation (RG-EVAL-02).
+  acquise       Boolean
+  formateurId   String   @map("id_formateur") @db.Uuid
+  dateSaisie    DateTime @default(now()) @map("date_saisie") @db.Timestamptz(3)
+
+  inscription Inscription @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+  competence  Competence  @relation(fields: [competenceId], references: [id], onDelete: Restrict)
+  formateur   Utilisateur @relation("EvaluationFormateur", fields: [formateurId], references: [id], onDelete: Restrict)
+
+  @@unique([inscriptionId, competenceId])
+  @@index([competenceId])
+  @@map("evaluation")
+}
+
+/// Attestation ou certificat PDF généré (RG-CERT-01/02, ADR-05 : fichier en
+/// stockage objet, référence en base).
+model Document {
+  id              String       @id @default(uuid()) @map("id_document") @db.Uuid
+  inscriptionId   String       @map("id_inscription") @db.Uuid
+  type            TypeDocument
+  referenceUnique String       @unique @map("reference_unique") @db.VarChar(30)
+  dateGeneration  DateTime     @default(now()) @map("date_generation") @db.Timestamptz(3)
+  emetteurId      String       @map("id_emetteur") @db.Uuid
+  /// Clé de l'objet dans le stockage (jamais un chemin fourni par l'utilisateur).
+  fichier         String       @db.VarChar(255)
+  /// Empreinte SHA-256 du PDF : contrôle d'intégrité (OWASP A08).
+  empreinteSha256 String       @map("empreinte_sha256") @db.Char(64)
+
+  inscription Inscription @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+  emetteur    Utilisateur @relation("DocumentEmetteur", fields: [emetteurId], references: [id], onDelete: Restrict)
+
+  @@index([inscriptionId])
+  @@map("document")
+}
+
+/// Réponse au questionnaire de satisfaction (RG-DASH-04, [À VALIDER]).
+model ReponseSatisfaction {
+  id            String   @id @default(uuid()) @map("id_reponse") @db.Uuid
+  inscriptionId String   @unique @map("id_inscription") @db.Uuid
+  /// Score de 1 à 5 (contrainte CHECK).
+  score         Int
+  commentaire   String?  @db.VarChar(1000)
+  dateReponse   DateTime @default(now()) @map("date_reponse") @db.Timestamptz(3)
+
+  inscription Inscription @relation(fields: [inscriptionId], references: [id], onDelete: Cascade)
+
+  @@map("reponse_satisfaction")
+}
+
+// ----------------------------------------------------------------------------
+// RGPD et journalisation (REQ-RGPD-001..006, REQ-SEC-004)
+// ----------------------------------------------------------------------------
+
+/// Preuve horodatée du consentement explicite (RG-RGPD-01).
+model Consentement {
+  id               String               @id @default(uuid()) @map("id_consentement") @db.Uuid
+  utilisateurId    String               @map("id_utilisateur") @db.Uuid
+  finalite         FinaliteConsentement
+  versionMentions  String               @map("version_mentions") @db.VarChar(20)
+  dateConsentement DateTime             @default(now()) @map("date_consentement") @db.Timestamptz(3)
+  /// Renseignée lorsque l'utilisateur retire son consentement.
+  dateRetrait      DateTime?            @map("date_retrait") @db.Timestamptz(3)
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@index([utilisateurId, finalite])
+  @@map("consentement")
+}
+
+/// Demande d'exercice des droits RGPD (RG-RGPD-02, UC-13/UC-14).
+model DemandeRgpd {
+  id             String            @id @default(uuid()) @map("id_demande") @db.Uuid
+  /// Numéro lisible (« D-126 ») pour les échanges avec le demandeur.
+  numero         Int               @unique @default(autoincrement())
+  utilisateurId  String            @map("id_utilisateur") @db.Uuid
+  type           TypeDemandeRgpd
+  statut         StatutDemandeRgpd @default(RECUE)
+  /// Précisions du demandeur (ex. donnée à rectifier).
+  message        String?           @db.VarChar(1000)
+  /// Compte rendu de traitement ou motif de refus.
+  reponse        String?           @db.VarChar(1000)
+  dateDemande    DateTime          @default(now()) @map("date_demande") @db.Timestamptz(3)
+  dateTraitement DateTime?         @map("date_traitement") @db.Timestamptz(3)
+  traitantId     String?           @map("id_traitant") @db.Uuid
+
+  utilisateur Utilisateur  @relation("DemandeDemandeur", fields: [utilisateurId], references: [id], onDelete: Restrict)
+  traitant    Utilisateur? @relation("DemandeTraitant", fields: [traitantId], references: [id], onDelete: Restrict)
+
+  @@index([statut])
+  @@index([utilisateurId])
+  @@map("demande_rgpd")
+}
+
+/// Journal des actions sensibles (RG-LOG-01) : qui, quoi, quand, sur quel objet.
+/// Écriture seule : UPDATE interdit et DELETE limité aux entrées échues
+/// (trigger PostgreSQL, voir migration).
+model JournalAction {
+  id            String   @id @default(uuid()) @map("id_journal") @db.Uuid
+  /// Null pour les actions du système (purge planifiée, verrouillage) ou les
+  /// tentatives de connexion sur un email inconnu.
+  utilisateurId String?  @map("id_utilisateur") @db.Uuid
+  action        String   @db.VarChar(50)
+  typeObjet     String?  @map("type_objet") @db.VarChar(50)
+  idObjet       String?  @map("id_objet") @db.VarChar(64)
+  dateAction    DateTime @default(now()) @map("date_action") @db.Timestamptz(3)
+  /// Jamais de mot de passe, de jeton ni de donnée sensible.
+  details       String?  @db.VarChar(500)
+  adresseIp     String?  @map("adresse_ip") @db.VarChar(45)
+
+  utilisateur Utilisateur? @relation(fields: [utilisateurId], references: [id], onDelete: Restrict)
+
+  @@index([dateAction])
+  @@index([utilisateurId, dateAction])
+  @@index([action, dateAction])
+  @@map("journal_action")
+}
+
+// ----------------------------------------------------------------------------
+// Tables techniques
+// ----------------------------------------------------------------------------
+
+/// Refresh token révocable, stocké haché, avec rotation à chaque usage et
+/// détection de réutilisation par famille (chapitre 10).
+model JetonRefresh {
+  id             String    @id @default(uuid()) @map("id_jeton") @db.Uuid
+  utilisateurId  String    @map("id_utilisateur") @db.Uuid
+  famille        String    @db.Uuid
+  empreinte      String    @unique @db.Char(64)
+  dateExpiration DateTime  @map("date_expiration") @db.Timestamptz(3)
+  dateRevocation DateTime? @map("date_revocation") @db.Timestamptz(3)
+  dateCreation   DateTime  @default(now()) @map("date_creation") @db.Timestamptz(3)
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@index([utilisateurId])
+  @@index([famille])
+  @@map("jeton_refresh")
+}
+
+/// Jeton à usage unique : réinitialisation de mot de passe (30 min, RG-AUTH-04)
+/// ou activation de compte. Seule l'empreinte SHA-256 est conservée.
+model JetonUsageUnique {
+  id              String    @id @default(uuid()) @map("id_jeton") @db.Uuid
+  utilisateurId   String    @map("id_utilisateur") @db.Uuid
+  type            TypeJeton
+  empreinte       String    @unique @db.Char(64)
+  dateExpiration  DateTime  @map("date_expiration") @db.Timestamptz(3)
+  dateUtilisation DateTime? @map("date_utilisation") @db.Timestamptz(3)
+  dateCreation    DateTime  @default(now()) @map("date_creation") @db.Timestamptz(3)
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@index([utilisateurId, type])
+  @@map("jeton_usage_unique")
+}
+
+/// Paramètres de la plateforme modifiables par l'Administrateur (hypothèses
+/// [À VALIDER] du dossier : durées de conservation, rôles soumis à la MFA…).
+model Parametre {
+  cle              String   @id @db.VarChar(100)
+  valeur           String   @db.VarChar(500)
+  description      String   @db.VarChar(300)
+  dateModification DateTime @updatedAt @map("date_modification") @db.Timestamptz(3)
+
+  @@map("parametre")
+}
