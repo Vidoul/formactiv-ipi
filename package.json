@@ -1,0 +1,29 @@
+{
+  "name": "formactiv",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FORMACTIV — plateforme web de gestion des formations et des compétences (MESI, Équipe 2)",
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml,css,html}": "prettier --write"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "19.8.1",
+    "@commitlint/config-conventional": "19.8.1",
+    "concurrently": "9.2.4",
+    "husky": "9.1.7",
+    "lint-staged": "16.4.0",
+    "prettier": "3.9.9"
+  }
+}

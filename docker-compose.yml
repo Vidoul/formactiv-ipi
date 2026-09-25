@@ -1,0 +1,40 @@
+# Environnement de DÉVELOPPEMENT (chapitre 12 du dossier de conception).
+# Démarre les services d'infrastructure ; l'API et le front tournent en local (npm run dev)
+# pour bénéficier du rechargement à chaud.
+#
+#   docker compose up -d
+#
+# - PostgreSQL : exposé sur le port 5433 de l'hôte pour ne pas entrer en conflit
+#   avec une éventuelle instance locale déjà présente sur 5432.
+# - Mailpit    : serveur SMTP factice (port 1025) + interface web http://localhost:8025
+#                pour lire les emails de récupération de mot de passe / activation.
+name: formactiv
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: formactiv
+      POSTGRES_PASSWORD: formactiv
+      POSTGRES_DB: formactiv
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U formactiv -d formactiv']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
+volumes:
+  pgdata:
