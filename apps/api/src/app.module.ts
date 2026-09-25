@@ -18,7 +18,13 @@ import { PrismaModule } from './prisma/prisma.module';
  */
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, cache: true, validate: validerEnvironnement }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      // Les tests n'utilisent que les variables injectées par test/setup-env.ts (reproductibilité).
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
+      validate: validerEnvironnement,
+    }),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<Environnement, true>) => [

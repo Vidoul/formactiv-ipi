@@ -1,0 +1,49 @@
+# Généré par `npm run openapi:export -w apps/api` — NE PAS MODIFIER À LA MAIN.
+# Source de vérité : décorateurs @nestjs/swagger des contrôleurs de apps/api/src.
+openapi: 3.0.0
+paths:
+  /api/v1/sante:
+    get:
+      operationId: SanteController_verifier
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                example:
+                  statut: ok
+                  base: ok
+      summary: État de l'API et de la base de données
+      tags:
+        - Supervision
+info:
+  title: FORMACTIV — API REST
+  description: >-
+    API de la plateforme de gestion des formations et des compétences FORMACTIV.
+
+
+    - Versionnée sous `/api/v1` (ADR-01), réponses JSON, pagination `page` / `limit`.
+
+    - Authentification : jeton **Bearer** (access token 15 min) ; refresh token en cookie `httpOnly`.
+
+    - Contrôle d’accès par rôle (matrice RBAC du chapitre 5), refus par défaut.
+
+    - Erreurs normalisées `{ statusCode, code, message, details }` : 400 validation, 401, 403, 404, 409 règle de
+    gestion, 423 compte verrouillé.
+  version: 1.0.0
+  contact: {}
+tags: []
+servers: []
+components:
+  securitySchemes:
+    jwt:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+    refresh:
+      type: apiKey
+      in: cookie
+      name: formactiv_refresh
+  schemas: {}

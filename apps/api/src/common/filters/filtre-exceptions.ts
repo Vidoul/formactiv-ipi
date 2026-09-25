@@ -81,6 +81,21 @@ export function normaliserException(exception: unknown): CorpsErreur {
     };
   }
 
+  // Erreurs du parseur de corps Express (http-errors) : JSON malformé, charge trop volumineuse.
+  if (estErreurClientHttp(exception)) {
+    const statusCode = exception.status;
+    return {
+      statusCode,
+      code: CODES_PAR_STATUT[statusCode] ?? 'REQUETE_INVALIDE',
+      message:
+        exception.type === 'entity.too.large'
+          ? 'Le corps de la requête dépasse la taille autorisée.'
+          : exception.type === 'entity.parse.failed'
+            ? 'Le corps de la requête n’est pas un JSON valide.'
+            : 'Requête invalide.',
+    };
+  }
+
   if (exception instanceof Prisma.PrismaClientKnownRequestError) {
     switch (exception.code) {
       case 'P2002':
@@ -120,4 +135,10 @@ export function normaliserException(exception: unknown): CorpsErreur {
     code: 'ERREUR_INTERNE',
     message: 'Une erreur interne est survenue.',
   };
+}
+
+function estErreurClientHttp(e: unknown): e is { status: number; type?: string } {
+  if (typeof e !== 'object' || e === null) return false;
+  const { status, expose } = e as { status?: unknown; expose?: unknown };
+  return typeof status === 'number' && status >= 400 && status < 500 && expose === true;
 }
