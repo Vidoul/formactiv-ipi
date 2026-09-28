@@ -11,10 +11,12 @@ import { DonneesSensiblesInterceptor } from './common/interceptors/donnees-sensi
 import { creerValidationPipe } from './common/validation';
 import { Environnement, validerEnvironnement } from './config/environnement';
 import { AuthModule } from './modules/auth/auth.module';
+import { EntreprisesModule } from './modules/entreprises/entreprises.module';
 import { JournalModule } from './modules/journal/journal.module';
 import { MailModule } from './modules/mail/mail.module';
 import { ParametresModule } from './modules/parametres/parametres.module';
 import { SanteModule } from './modules/sante/sante.module';
+import { UtilisateursModule } from './modules/utilisateurs/utilisateurs.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 /**
@@ -48,6 +50,8 @@ import { PrismaModule } from './prisma/prisma.module';
     MailModule,
     SanteModule,
     AuthModule,
+    UtilisateursModule,
+    EntreprisesModule,
   ],
   providers: [
     { provide: APP_PIPE, useFactory: creerValidationPipe },

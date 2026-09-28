@@ -40,7 +40,24 @@ export const routes: RouteObject[] = [
         element: <GabaritConnecte />,
         children: [
           { path: '/mon-compte/securite', ...page(() => import('./auth/PageSecurite')) },
-          reserveA(['ADMIN'], [{ path: '/admin/tableau-de-bord', ...accueil }]),
+          reserveA(
+            ['ADMIN'],
+            [
+              { path: '/admin/tableau-de-bord', ...accueil },
+              {
+                path: '/admin/utilisateurs',
+                ...page(() => import('./features/admin/PageUtilisateurs')),
+              },
+              {
+                path: '/admin/entreprises',
+                ...page(() => import('./features/admin/PageEntreprises')),
+              },
+              {
+                path: '/admin/parametres',
+                ...page(() => import('./features/admin/PageParametres')),
+              },
+            ],
+          ),
           reserveA(['RESP_FORMATION'], [{ path: '/pilotage', ...accueil }]),
           reserveA(['FORMATEUR'], [{ path: '/formateur/sessions', ...accueil }]),
           reserveA(['APPRENANT'], [{ path: '/mon-espace', ...accueil }]),

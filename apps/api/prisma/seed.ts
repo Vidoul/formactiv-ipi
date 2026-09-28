@@ -199,17 +199,17 @@ async function seedDemo(roles: Record<CodeRole, string>): Promise<void> {
     prisma.entrepriseCliente.create({
       data: {
         raisonSociale: 'Groupe Oxalys',
-        siret: '81234567800019',
+        siret: '81234567800013',
         emailContact: 'formation@oxalys.fr',
       },
     }),
     prisma.entrepriseCliente.create({
-      data: { raisonSociale: 'Nexatech', siret: '79865432100027', emailContact: 'rh@nexatech.fr' },
+      data: { raisonSociale: 'Nexatech', siret: '79865432100024', emailContact: 'rh@nexatech.fr' },
     }),
     prisma.entrepriseCliente.create({
       data: {
         raisonSociale: 'Neosys Conseil',
-        siret: '52147896300035',
+        siret: '52147896300031',
         emailContact: 'contact@neosys.fr',
       },
     }),

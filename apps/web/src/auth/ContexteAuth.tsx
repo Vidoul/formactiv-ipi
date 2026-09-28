@@ -18,7 +18,7 @@ export type EtatAuth =
   | { statut: 'anonyme'; raison?: 'expiree' | 'deconnexion' | 'mot-de-passe-modifie' }
   | { statut: 'connecte'; utilisateur: UtilisateurCourant };
 
-interface ValeurAuth {
+export interface ValeurAuth {
   etat: EtatAuth;
   connecter: (
     email: string,
@@ -29,7 +29,8 @@ interface ValeurAuth {
   mettreAJourUtilisateur: (utilisateur: UtilisateurCourant) => void;
 }
 
-const ContexteAuth = createContext<ValeurAuth | null>(null);
+/** Exporté pour les tests (fourniture d’une session simulée). */
+export const ContexteAuth = createContext<ValeurAuth | null>(null);
 
 const attendre = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
