@@ -8,7 +8,7 @@ export { EnTetePage } from './EnTetePage';
 export { GraphiqueBarres } from './GraphiqueBarres';
 export type { PointGraphique } from './GraphiqueBarres';
 export { Indicateur } from './Indicateur';
-export { Alerte, AlerteErreur, Chargement, EtatVide } from './Messages';
+export { Alerte, AlerteErreur, Chargement, EtatVide, messageErreur } from './Messages';
 export { FournisseurNotifications, useNotifier } from './Notifications';
 export { Pagination } from './Pagination';
 export { Progression } from './Progression';

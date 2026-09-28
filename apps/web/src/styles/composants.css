@@ -427,6 +427,11 @@ fieldset.groupe legend {
   margin: var(--espace-3) 0 0;
 }
 
+/* Mention secondaire dans une cellule (« À générer », « en cours »). */
+.texte-discret {
+  color: var(--couleur-texte-secondaire);
+}
+
 .etat-vide {
   text-align: center;
   padding: var(--espace-8) var(--espace-4);

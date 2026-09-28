@@ -179,6 +179,20 @@ export function nomFichierDepuisEntete(entete: string | null): string | undefine
   return simple?.[1];
 }
 
+/**
+ * Déclenche le téléchargement d'une URL signée de l'API (ADR-05) : la réponse porte
+ * `Content-Disposition: attachment`, le navigateur enregistre le fichier sans quitter la page.
+ */
+export function telechargerDepuisUrl(url: string, nom: string): void {
+  const lien = document.createElement('a');
+  lien.href = url;
+  lien.download = nom;
+  lien.rel = 'noopener';
+  document.body.appendChild(lien);
+  lien.click();
+  lien.remove();
+}
+
 export function enregistrerFichier(contenu: Blob, nom: string): void {
   const url = URL.createObjectURL(contenu);
   const lien = document.createElement('a');
