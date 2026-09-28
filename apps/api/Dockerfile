@@ -9,13 +9,15 @@ ARG NODE_VERSION=24-alpine
 FROM node:${NODE_VERSION} AS dependances
 WORKDIR /app
 RUN apk add --no-cache openssl
-# Scripts d'installation nécessaires (moteurs Prisma) ; hooks Git inutiles dans l'image.
-ENV HUSKY=0
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY e2e/package.json e2e/package.json
-RUN npm ci --workspace @formactiv/api --include-workspace-root=false
+# Scripts d'installation nécessaires (moteurs Prisma, argon2). Le script « prepare » de la racine
+# (hooks Git Husky) est retiré : npm l'exécute même avec --include-workspace-root=false, alors que
+# les outils de la racine ne sont pas installés dans l'image.
+RUN npm pkg delete scripts.prepare \
+  && npm ci --workspace @formactiv/api --include-workspace-root=false
 
 # --- Construction ------------------------------------------------------------------------------
 FROM dependances AS construction
