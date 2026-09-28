@@ -2,6 +2,61 @@
 # Source de vérité : décorateurs @nestjs/swagger des contrôleurs de apps/api/src.
 openapi: 3.0.0
 paths:
+  /api/v1/journal:
+    get:
+      description: Filtres utilisateur, action et période ; réservé à l’administrateur.
+      operationId: JournalController_lister
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: utilisateur
+          required: false
+          in: query
+          description: Nom, prénom ou email de l’auteur ; « système » possible
+          schema:
+            type: string
+        - name: action
+          required: false
+          in: query
+          schema:
+            example: CHANGEMENT_ROLE
+            type: string
+        - name: jours
+          required: false
+          in: query
+          description: Profondeur en jours
+          schema:
+            type: number
+            enum:
+              - 7
+              - 30
+              - 90
+              - 365
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageJournalDto'
+      security:
+        - jwt: []
+      summary: Consultation filtrée du journal (UC-15, RG-LOG-01)
+      tags:
+        - Journal d’audit
   /api/v1/parametres:
     get:
       operationId: ParametresController_lister
@@ -1787,6 +1842,210 @@ paths:
       summary: Réponse au questionnaire de satisfaction (RG-DASH-04)
       tags:
         - Reporting et tableaux de bord
+  /api/v1/rgpd/mes-donnees:
+    get:
+      operationId: RgpdController_mesDonnees
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MesDonneesDto'
+      security:
+        - jwt: []
+      summary: 'Droit d’accès : données de l’utilisateur authentifié (US-28)'
+      tags:
+        - RGPD
+    patch:
+      operationId: RgpdController_rectifier
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RectificationDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MesDonneesDto'
+      security:
+        - jwt: []
+      summary: Rectification en libre-service du nom et du prénom (US-29)
+      tags:
+        - RGPD
+  /api/v1/rgpd/mes-donnees/export:
+    get:
+      operationId: RgpdController_exporter
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: 'Portabilité : export JSON des données personnelles (journalisé)'
+      tags:
+        - RGPD
+  /api/v1/rgpd/consentements/{finalite}:
+    post:
+      operationId: RgpdController_donner
+      parameters:
+        - name: finalite
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MesDonneesDto'
+      security:
+        - jwt: []
+      summary: Donner son consentement à une finalité facultative (RG-RGPD-01)
+      tags:
+        - RGPD
+    delete:
+      operationId: RgpdController_retirer
+      parameters:
+        - name: finalite
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MesDonneesDto'
+      security:
+        - jwt: []
+      summary: Retirer son consentement (preuve conservée, horodatée)
+      tags:
+        - RGPD
+  /api/v1/rgpd/demandes:
+    post:
+      operationId: RgpdController_creerDemande
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreationDemandeDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemandeDto'
+      security:
+        - jwt: []
+      summary: 'Dépôt d’une demande : accès, rectification, suppression (US-30)'
+      tags:
+        - RGPD
+    get:
+      operationId: RgpdController_listerDemandes
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: type
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - ACCES
+              - RECTIFICATION
+              - SUPPRESSION
+        - name: statut
+          required: false
+          in: query
+          description: OUVERTES = reçues ou en cours
+          schema:
+            type: string
+            enum:
+              - OUVERTES
+              - RECUE
+              - EN_COURS
+              - TRAITEE
+              - REFUSEE
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: File de traitement des demandes (écran 07, US-31)
+      tags:
+        - RGPD
+  /api/v1/rgpd/demandes/{id}:
+    patch:
+      description: Une suppression traitée efface le compte (anonymisation si historique, RG-CPT-02).
+      operationId: RgpdController_traiter
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraitementDemandeDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemandeAdministrationDto'
+      security:
+        - jwt: []
+      summary: Traitement d’une demande
+      tags:
+        - RGPD
+  /api/v1/rgpd/conservation/purge:
+    post:
+      description: Également planifiée chaque mois ; chaque exécution est journalisée.
+      operationId: RgpdController_purger
+      parameters: []
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RapportConservationDto'
+      security:
+        - jwt: []
+      summary: Exécution immédiate de la politique de conservation (RG-RGPD-04)
+      tags:
+        - RGPD
 info:
   title: FORMACTIV — API REST
   description: >-
@@ -1816,6 +2075,53 @@ components:
       in: cookie
       name: formactiv_refresh
   schemas:
+    EntreeJournalDto:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          format: date-time
+          type: string
+        utilisateur:
+          type: object
+          nullable: true
+        action:
+          type: string
+        typeObjet:
+          type: object
+          nullable: true
+        idObjet:
+          type: object
+          nullable: true
+        details:
+          type: object
+          nullable: true
+        adresseIp:
+          type: object
+          nullable: true
+      required:
+        - id
+        - date
+        - action
+    PageJournalDto:
+      type: object
+      properties:
+        donnees:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntreeJournalDto'
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+      required:
+        - donnees
+        - total
+        - page
+        - limit
     ModificationParametreDto:
       type: object
       properties:
@@ -3601,3 +3907,248 @@ components:
         - id
         - score
         - dateReponse
+    CompteDto:
+      type: object
+      properties:
+        id:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - RESP_FORMATION
+            - FORMATEUR
+            - APPRENANT
+            - CLIENT_ENTREPRISE
+        statutCompte:
+          type: string
+          enum:
+            - ACTIF
+            - VERROUILLE
+            - DESACTIVE
+            - ANONYMISE
+        entreprise:
+          type: object
+          nullable: true
+        mfaActive:
+          type: boolean
+        dateCreation:
+          format: date-time
+          type: string
+        dateDerniereConnexion:
+          type: object
+          nullable: true
+      required:
+        - id
+        - nom
+        - prenom
+        - email
+        - role
+        - statutCompte
+        - mfaActive
+        - dateCreation
+    ConsentementDto:
+      type: object
+      properties:
+        id:
+          type: string
+        finalite:
+          type: string
+          enum:
+            - GESTION_COMPTE
+            - QUESTIONNAIRES_SATISFACTION
+        versionMentions:
+          type: string
+        dateConsentement:
+          format: date-time
+          type: string
+        dateRetrait:
+          type: object
+          nullable: true
+      required:
+        - id
+        - finalite
+        - versionMentions
+        - dateConsentement
+    DemandeDto:
+      type: object
+      properties:
+        id:
+          type: string
+        numero:
+          type: string
+          example: D-126
+        type:
+          type: string
+          enum:
+            - ACCES
+            - RECTIFICATION
+            - SUPPRESSION
+        statut:
+          type: string
+          enum:
+            - RECUE
+            - EN_COURS
+            - TRAITEE
+            - REFUSEE
+        message:
+          type: object
+          nullable: true
+        reponse:
+          type: object
+          nullable: true
+        dateDemande:
+          format: date-time
+          type: string
+        dateTraitement:
+          type: object
+          nullable: true
+      required:
+        - id
+        - numero
+        - type
+        - statut
+        - dateDemande
+    MesDonneesDto:
+      type: object
+      properties:
+        compte:
+          $ref: '#/components/schemas/CompteDto'
+        consentements:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentementDto'
+        inscriptions:
+          type: array
+          items:
+            type: string
+        evaluations:
+          type: array
+          items:
+            type: string
+        documents:
+          type: array
+          items:
+            type: string
+        satisfaction:
+          type: array
+          items:
+            type: string
+        demandes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DemandeDto'
+      required:
+        - compte
+        - consentements
+        - inscriptions
+        - evaluations
+        - documents
+        - satisfaction
+        - demandes
+    RectificationDto:
+      type: object
+      properties:
+        nom:
+          type: string
+          example: Martin
+        prenom:
+          type: string
+          example: Léa
+    CreationDemandeDto:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - ACCES
+            - RECTIFICATION
+            - SUPPRESSION
+        message:
+          type: string
+          maxLength: 1000
+          description: Précisions (ex. donnée à rectifier)
+      required:
+        - type
+    TraitementDemandeDto:
+      type: object
+      properties:
+        statut:
+          type: string
+          enum:
+            - EN_COURS
+            - TRAITEE
+            - REFUSEE
+        reponse:
+          type: string
+          maxLength: 1000
+          description: Compte rendu ou motif de refus
+      required:
+        - statut
+    DemandeAdministrationDto:
+      type: object
+      properties:
+        id:
+          type: string
+        numero:
+          type: string
+          example: D-126
+        type:
+          type: string
+          enum:
+            - ACCES
+            - RECTIFICATION
+            - SUPPRESSION
+        statut:
+          type: string
+          enum:
+            - RECUE
+            - EN_COURS
+            - TRAITEE
+            - REFUSEE
+        message:
+          type: object
+          nullable: true
+        reponse:
+          type: object
+          nullable: true
+        dateDemande:
+          format: date-time
+          type: string
+        dateTraitement:
+          type: object
+          nullable: true
+        demandeur:
+          type: object
+        traitant:
+          type: object
+          nullable: true
+      required:
+        - id
+        - numero
+        - type
+        - statut
+        - dateDemande
+        - demandeur
+    RapportConservationDto:
+      type: object
+      properties:
+        comptesAnonymises:
+          type: number
+        entreesJournalPurgees:
+          type: number
+        reponsesSatisfactionAnonymisees:
+          type: number
+        fichiersOrphelinsSupprimes:
+          type: number
+      required:
+        - comptesAnonymises
+        - entreesJournalPurgees
+        - reponsesSatisfactionAnonymisees
+        - fichiersOrphelinsSupprimes
