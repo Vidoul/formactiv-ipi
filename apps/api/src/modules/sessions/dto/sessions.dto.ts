@@ -10,14 +10,13 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  Matches,
   Max,
   MaxLength,
   Min,
   ValidateIf,
 } from 'class-validator';
+import { EstDateIso } from '../../../common/decorators/date-iso.decorator';
 import { PaginationQueryDto } from '../../../common/dto/pagination.dto';
-import { DATE_ISO, MESSAGE_DATE } from '../../../common/utils/dates';
 import { Nettoyer } from '../../../common/utils/transformations';
 
 export class ListeSessionsQueryDto extends PaginationQueryDto {
@@ -33,12 +32,12 @@ export class ListeSessionsQueryDto extends PaginationQueryDto {
 
   @ApiPropertyOptional({ description: 'Sessions se déroulant après cette date (AAAA-MM-JJ)' })
   @IsOptional()
-  @Matches(DATE_ISO, { message: MESSAGE_DATE })
+  @EstDateIso()
   depuis?: string;
 
   @ApiPropertyOptional({ description: 'Sessions se déroulant avant cette date (AAAA-MM-JJ)' })
   @IsOptional()
-  @Matches(DATE_ISO, { message: MESSAGE_DATE })
+  @EstDateIso()
   jusqua?: string;
 }
 
@@ -48,11 +47,11 @@ export class CreationSessionDto {
   formationId!: string;
 
   @ApiProperty({ example: '2026-09-14' })
-  @Matches(DATE_ISO, { message: MESSAGE_DATE })
+  @EstDateIso()
   dateDebut!: string;
 
   @ApiProperty({ example: '2026-09-18', description: 'Postérieure ou égale au début (RG-SESS-01)' })
-  @Matches(DATE_ISO, { message: MESSAGE_DATE })
+  @EstDateIso()
   dateFin!: string;
 
   @ApiPropertyOptional({ example: 12, nullable: true, description: 'RG-SESS-03 ([À VALIDER])' })
@@ -86,11 +85,11 @@ export class ModificationSessionDto extends PartialType(
 
 export class PeriodeQueryDto {
   @ApiProperty({ example: '2026-09-14' })
-  @Matches(DATE_ISO, { message: MESSAGE_DATE })
+  @EstDateIso()
   debut!: string;
 
   @ApiProperty({ example: '2026-09-18' })
-  @Matches(DATE_ISO, { message: MESSAGE_DATE })
+  @EstDateIso()
   fin!: string;
 
   @ApiPropertyOptional({ format: 'uuid', description: 'Session à ignorer (modification)' })
