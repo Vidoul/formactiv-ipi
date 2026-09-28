@@ -4,10 +4,17 @@
  * - `local` (DEV / TEST) : dossier du serveur ;
  * - `s3` (PROD) : stockage objet compatible S3 hébergé dans l'UE.
  */
+export interface ObjetStocke {
+  cle: string;
+  modifieLe: Date;
+}
+
 export interface Stockage {
   deposer(cle: string, contenu: Buffer, typeMime: string): Promise<void>;
   lire(cle: string): Promise<Buffer>;
   supprimer(cle: string): Promise<void>;
+  /** Objets dont la clé commence par `prefixe` (purge des fichiers orphelins, RG-RGPD-04). */
+  lister(prefixe: string): Promise<ObjetStocke[]>;
 }
 
 export const STOCKAGE = Symbol('STOCKAGE');

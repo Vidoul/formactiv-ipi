@@ -22,6 +22,7 @@ import { JournalModule } from './modules/journal/journal.module';
 import { MailModule } from './modules/mail/mail.module';
 import { ParametresModule } from './modules/parametres/parametres.module';
 import { ReportingModule } from './modules/reporting/reporting.module';
+import { RgpdModule } from './modules/rgpd/rgpd.module';
 import { SanteModule } from './modules/sante/sante.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { UtilisateursModule } from './modules/utilisateurs/utilisateurs.module';
@@ -68,6 +69,7 @@ import { PrismaModule } from './prisma/prisma.module';
     DocumentsModule,
     ExportsModule,
     ReportingModule,
+    RgpdModule,
   ],
   providers: [
     { provide: APP_PIPE, useFactory: creerValidationPipe },
