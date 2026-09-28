@@ -14,10 +14,12 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CompetencesModule } from './modules/competences/competences.module';
 import { EntreprisesModule } from './modules/entreprises/entreprises.module';
 import { FormationsModule } from './modules/formations/formations.module';
+import { InscriptionsModule } from './modules/inscriptions/inscriptions.module';
 import { JournalModule } from './modules/journal/journal.module';
 import { MailModule } from './modules/mail/mail.module';
 import { ParametresModule } from './modules/parametres/parametres.module';
 import { SanteModule } from './modules/sante/sante.module';
+import { SessionsModule } from './modules/sessions/sessions.module';
 import { UtilisateursModule } from './modules/utilisateurs/utilisateurs.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -56,6 +58,8 @@ import { PrismaModule } from './prisma/prisma.module';
     EntreprisesModule,
     CompetencesModule,
     FormationsModule,
+    SessionsModule,
+    InscriptionsModule,
   ],
   providers: [
     { provide: APP_PIPE, useFactory: creerValidationPipe },
