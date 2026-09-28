@@ -50,7 +50,7 @@ export function configurerApplication(app: NestExpressApplication): void {
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Content-Disposition', 'X-Request-Id'],
+    exposedHeaders: ['Content-Disposition', 'X-Request-Id', 'X-Nombre-Lignes'],
     maxAge: 600,
   });
 

@@ -21,7 +21,16 @@ import {
   TypeDemandeRgpd,
   TypeReferentiel,
 } from '@prisma/client';
+import { createHash, randomUUID } from 'node:crypto';
 import { hacherMotDePasse } from '../src/common/securite/hachage';
+import { aujourdhui, versIso } from '../src/common/utils/dates';
+import {
+  documentPropose,
+  fonctionEmetteur,
+  formaterReference,
+} from '../src/modules/documents/documents.regles';
+import { genererDocumentPdf } from '../src/modules/documents/pdf/gabarit-document';
+import { creerStockage } from '../src/modules/documents/stockage/stockage.provider';
 import {
   CATALOGUE_PARAMETRES,
   CleParametre,
@@ -134,6 +143,98 @@ async function seedAdministrateurInitial(roles: Record<CodeRole, string>): Promi
 // ---------------------------------------------------------------------------
 // Données de démonstration
 // ---------------------------------------------------------------------------
+
+/**
+ * Émet une attestation ou un certificat de démonstration avec le même gabarit PDF que l'API
+ * (UC-09) : fichier déposé dans le stockage configuré (STORAGE_DRIVER) et empreinte SHA-256.
+ */
+const stockage = creerStockage({
+  STORAGE_DRIVER: process.env.STORAGE_DRIVER === 's3' ? 's3' : 'local',
+  STORAGE_LOCAL_DIR: process.env.STORAGE_LOCAL_DIR ?? './storage',
+  S3_ENDPOINT: process.env.S3_ENDPOINT,
+  S3_REGION: process.env.S3_REGION,
+  S3_BUCKET: process.env.S3_BUCKET,
+  S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+  S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
+});
+const numerosDocuments = new Map<string, number>();
+
+async function emettreDocument(
+  inscriptionId: string,
+  emetteur: { id: string; nom: string; prenom: string },
+  dateGeneration: Date,
+): Promise<void> {
+  const i = await prisma.inscription.findUniqueOrThrow({
+    where: { id: inscriptionId },
+    select: {
+      statut: true,
+      apprenant: { select: { nom: true, prenom: true } },
+      evaluations: { select: { competenceId: true, acquise: true } },
+      session: {
+        select: {
+          dateDebut: true,
+          dateFin: true,
+          lieu: true,
+          formation: {
+            select: {
+              intitule: true,
+              dureeHeures: true,
+              modalite: true,
+              competences: {
+                select: { competence: { select: { id: true, libelle: true, codeRncp: true } } },
+                orderBy: { competence: { libelle: 'asc' } },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  const f = i.session.formation;
+  const acquises = new Set(i.evaluations.filter((e) => e.acquise).map((e) => e.competenceId));
+  const type = documentPropose({
+    statut: i.statut,
+    competencesVisees: f.competences.length,
+    competencesAcquises: f.competences.filter((c) => acquises.has(c.competence.id)).length,
+  });
+  if (!type) return;
+  const annee = Number(aujourdhui(dateGeneration).slice(0, 4));
+  const cle = `${type}-${annee}`;
+  const numero = (numerosDocuments.get(cle) ?? 0) + 1;
+  numerosDocuments.set(cle, numero);
+  const reference = formaterReference(type, annee, numero);
+  const contenu = await genererDocumentPdf({
+    type,
+    reference,
+    dateGeneration,
+    apprenant: i.apprenant,
+    formation: { intitule: f.intitule, dureeHeures: f.dureeHeures, modalite: f.modalite },
+    session: {
+      dateDebut: versIso(i.session.dateDebut),
+      dateFin: versIso(i.session.dateFin),
+      lieu: i.session.lieu,
+    },
+    competences: f.competences.map(({ competence: c }) => ({
+      libelle: c.libelle,
+      codeRncp: c.codeRncp,
+      acquise: acquises.has(c.id),
+    })),
+    emetteur: { ...emetteur, fonction: fonctionEmetteur(CodeRole.RESP_FORMATION) },
+  });
+  const fichier = `documents/${annee}/${randomUUID()}.pdf`;
+  await stockage.deposer(fichier, contenu, 'application/pdf');
+  await prisma.document.create({
+    data: {
+      inscriptionId,
+      type,
+      referenceUnique: reference,
+      dateGeneration,
+      emetteurId: emetteur.id,
+      fichier,
+      empreinteSha256: createHash('sha256').update(contenu).digest('hex'),
+    },
+  });
+}
 
 const PRENOMS = [
   'Hugo',
@@ -517,13 +618,22 @@ async function seedDemo(roles: Record<CodeRole, string>): Promise<void> {
     }
     return insc;
   };
+  const aEmettre: { inscriptionId: string; date: Date }[] = [];
   const notesAleatoires = (n: number) => Array.from({ length: n }, () => entre(6, 19));
 
-  // Cybersécurité — session passée, terminée
+  // Cybersécurité — session passée, terminée (écran 14 : Léa et Paul restent à traiter)
   await inscrire(lea, sCyberPassee, StatutInscription.TERMINEE, { notes: [15, 13, 17], score: 5 });
   await inscrire(paul, sCyberPassee, StatutInscription.TERMINEE, { notes: [12, 8, 14], score: 4 });
-  await inscrire(sami, sCyberPassee, StatutInscription.TERMINEE, { notes: [16, 11, 12], score: 4 });
-  await inscrire(nina, sCyberPassee, StatutInscription.TERMINEE, { notes: [14, 12, 15], score: 5 });
+  const iSami = await inscrire(sami, sCyberPassee, StatutInscription.TERMINEE, {
+    notes: [16, 11, 12],
+    score: 4,
+  });
+  const iNina = await inscrire(nina, sCyberPassee, StatutInscription.TERMINEE, {
+    notes: [14, 12, 15],
+    score: 5,
+  });
+  aEmettre.push({ inscriptionId: iSami.id, date: instant(-35, 10) });
+  aEmettre.push({ inscriptionId: iNina.id, date: instant(-35, 10, 5) });
   for (const a of generes.slice(0, 6)) {
     await inscrire(a, sCyberPassee, StatutInscription.TERMINEE, {
       notes: notesAleatoires(3),
@@ -546,15 +656,17 @@ async function seedDemo(roles: Record<CodeRole, string>): Promise<void> {
   }
 
   // Développement web — session passée terminée
-  await inscrire(marc, sWebPassee, StatutInscription.TERMINEE, {
+  const iMarc = await inscrire(marc, sWebPassee, StatutInscription.TERMINEE, {
     notes: [14, 12, 11, 13],
     score: 4,
   });
+  aEmettre.push({ inscriptionId: iMarc.id, date: instant(-89, 11) });
   for (const a of generes.slice(10, 18)) {
-    await inscrire(a, sWebPassee, StatutInscription.TERMINEE, {
+    const i = await inscrire(a, sWebPassee, StatutInscription.TERMINEE, {
       notes: notesAleatoires(4),
       score: entre(3, 5),
     });
+    aEmettre.push({ inscriptionId: i.id, date: instant(-89, 11, entre(10, 50)) });
   }
 
   // Gestion de projet — session passée : 2 notes manquantes
@@ -579,11 +691,18 @@ async function seedDemo(roles: Record<CodeRole, string>): Promise<void> {
   await inscrire(julie, sProjetProchaine, StatutInscription.VALIDEE);
 
   // Bureautique avancée — ancienne session (formation archivée depuis)
-  await inscrire(lea, sBureautique, StatutInscription.TERMINEE, {
+  const iLeaBureautique = await inscrire(lea, sBureautique, StatutInscription.TERMINEE, {
     notes: [12],
     formateur: sonia,
     score: 4,
   });
+  aEmettre.push({ inscriptionId: iLeaBureautique.id, date: instant(-398, 14) });
+
+  // Attestations et certificats déjà émis, numérotés dans l'ordre chronologique (RG-CERT-02)
+  aEmettre.sort((a, b) => a.date.getTime() - b.date.getTime());
+  for (const { inscriptionId, date } of aEmettre) {
+    await emettreDocument(inscriptionId, nadia, date);
+  }
 
   // --- Demandes RGPD (UC-13 / UC-14) ----------------------------------------------------------
   await prisma.demandeRgpd.createMany({
@@ -670,7 +789,8 @@ async function seedDemo(roles: Record<CodeRole, string>): Promise<void> {
 
   console.log(
     `Démonstration : ${await prisma.utilisateur.count()} comptes, ${await prisma.formation.count()} formations, ` +
-      `${await prisma.session.count()} sessions, ${await prisma.inscription.count()} inscriptions.`,
+      `${await prisma.session.count()} sessions, ${await prisma.inscription.count()} inscriptions, ` +
+      `${await prisma.document.count()} documents.`,
   );
   console.log(`Mot de passe des comptes de démonstration : ${MOT_DE_PASSE_DEMO}`);
 }

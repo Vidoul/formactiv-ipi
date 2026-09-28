@@ -13,7 +13,9 @@ import { Environnement, validerEnvironnement } from './config/environnement';
 import { AuthModule } from './modules/auth/auth.module';
 import { CompetencesModule } from './modules/competences/competences.module';
 import { EntreprisesModule } from './modules/entreprises/entreprises.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 import { EvaluationsModule } from './modules/evaluations/evaluations.module';
+import { ExportsModule } from './modules/exports/exports.module';
 import { FormationsModule } from './modules/formations/formations.module';
 import { InscriptionsModule } from './modules/inscriptions/inscriptions.module';
 import { JournalModule } from './modules/journal/journal.module';
@@ -62,6 +64,8 @@ import { PrismaModule } from './prisma/prisma.module';
     SessionsModule,
     InscriptionsModule,
     EvaluationsModule,
+    DocumentsModule,
+    ExportsModule,
   ],
   providers: [
     { provide: APP_PIPE, useFactory: creerValidationPipe },

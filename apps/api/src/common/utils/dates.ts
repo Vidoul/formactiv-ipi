@@ -3,6 +3,11 @@
  * format ISO « AAAA-MM-JJ » ; « aujourd'hui » est évalué dans le fuseau de FORMACTIV
  * (Europe/Paris) et non en UTC, pour éviter un décalage entre minuit et 2 h du matin.
  */
+
+/** Format « AAAA-MM-JJ » attendu dans les entrées de l'API. */
+export const DATE_ISO = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+export const MESSAGE_DATE = 'Date attendue au format AAAA-MM-JJ.';
+
 const FORMAT_ISO_PARIS = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Europe/Paris',
   year: 'numeric',
