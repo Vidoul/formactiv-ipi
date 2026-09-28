@@ -46,6 +46,10 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
   (RG-SESS-02), capacité garantie même en accès concurrent (RG-SESS-03), inscriptions uniques
   (RG-INSC-01), cycle de statuts (RG-INSC-02) et prérequis à vérifier (RG-INSC-03) ; écrans
   Figma 12 (planification), 13 (suivi des inscriptions) et 15 (Mes sessions du formateur).
+- **Lot 4 — Évaluations (US-16..18, UC-08)** : saisie des notes par le seul formateur affecté
+  (RG-EVAL-01), acquisition au seuil de la formation (RG-EVAL-02), corrections journalisées avec
+  l'ancienne valeur, feuille de session groupée, synthèse sans note pour le client entreprise ;
+  écran Figma 16.
 
 ### Sécurité
 

@@ -89,6 +89,10 @@ export const routes: RouteObject[] = [
                 path: '/formateur/sessions',
                 ...page(() => import('./features/formateur/PageMesSessions')),
               },
+              {
+                path: '/formateur/evaluations',
+                ...page(() => import('./features/formateur/PageEvaluations')),
+              },
               { path: '/formateur/tableau-de-bord', ...accueil },
             ],
           ),
