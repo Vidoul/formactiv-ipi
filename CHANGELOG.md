@@ -31,6 +31,12 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
   (RG-AUTH-04), activation de compte avec consentement explicite (RG-RGPD-01), politique de
   mot de passe (RG-AUTH-01), gardes RBAC en refus par défaut ; écrans de connexion, MFA,
   mot de passe oublié, réinitialisation, activation et sécurité du compte.
+- **Lot 1b — Comptes, rôles, entreprises, paramètres (US-01/02, UC-03, REQ-FUNC-018)** :
+  création de compte avec lien d'activation, rôle unique (RG-CPT-01), portées RBAC
+  (formateur : apprenants de ses sessions, client : ses salariés), changement de rôle journalisé
+  avec fermeture des sessions, déverrouillage et réinitialisation MFA, suppression ou
+  anonymisation selon l'historique (RG-CPT-02), entreprises clientes (SIRET contrôlé),
+  paramètres plateforme administrables ; écrans Utilisateurs (Figma 06), Entreprises, Paramètres.
 
 ### Sécurité
 

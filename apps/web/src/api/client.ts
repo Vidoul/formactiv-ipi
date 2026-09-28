@@ -36,11 +36,16 @@ export class ErreurApi extends Error {
     this.name = 'ErreurApi';
   }
 
-  /** Erreurs de validation par champ (400 VALIDATION) pour l'affichage en ligne. */
+  /**
+   * Erreurs par champ pour l'affichage en ligne : validation (400 VALIDATION) ou règle de gestion
+   * rattachée à un champ (ex. 409 EMAIL_DEJA_UTILISE), qui partagent le format { champ, messages }.
+   */
   get erreursChamps(): Record<string, string> {
-    if (this.code !== 'VALIDATION' || !Array.isArray(this.details)) return {};
+    if (!Array.isArray(this.details)) return {};
     return Object.fromEntries(
-      (this.details as ErreurChamp[]).map((e) => [e.champ, e.messages.join(' ')]),
+      (this.details as Partial<ErreurChamp>[])
+        .filter((e): e is ErreurChamp => typeof e.champ === 'string' && Array.isArray(e.messages))
+        .map((e) => [e.champ, e.messages.join(' ')]),
     );
   }
 }

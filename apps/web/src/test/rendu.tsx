@@ -3,23 +3,50 @@ import { render, type RenderOptions } from '@testing-library/react';
 import type { ReactElement, ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import type { UtilisateurCourant } from '../api/types';
+import { ContexteAuth, type ValeurAuth } from '../auth/ContexteAuth';
+import { FournisseurPage } from '../components/layout/ContextePage';
 import { FournisseurNotifications } from '../components/ui';
 
-/** Rendu d'un composant avec les fournisseurs de l'application (requêtes, routage, notifications). */
+interface OptionsRendu extends RenderOptions {
+  route?: string;
+  /** Session simulée : le composant est rendu comme pour un utilisateur connecté. */
+  utilisateur?: UtilisateurCourant;
+}
+
+/**
+ * Rendu d'un composant avec les fournisseurs de l'application (requêtes, routage, notifications,
+ * session éventuelle).
+ */
 export function rendre(
   element: ReactElement,
-  { route = '/', ...options }: RenderOptions & { route?: string } = {},
+  { route = '/', utilisateur, ...options }: OptionsRendu = {},
 ) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+  const session: ValeurAuth | null = utilisateur
+    ? {
+        etat: { statut: 'connecte', utilisateur },
+        connecter: vi.fn(),
+        verifierMfa: vi.fn(),
+        deconnecter: vi.fn(),
+        mettreAJourUtilisateur: vi.fn(),
+      }
+    : null;
   function Fournisseurs({ children }: { children: ReactNode }) {
-    return (
+    const contenu = (
       <QueryClientProvider client={client}>
         <FournisseurNotifications>
-          <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+          <MemoryRouter initialEntries={[route]}>
+            <FournisseurPage>{children}</FournisseurPage>
+          </MemoryRouter>
         </FournisseurNotifications>
       </QueryClientProvider>
+    );
+    return session ? (
+      <ContexteAuth.Provider value={session}>{contenu}</ContexteAuth.Provider>
+    ) : (
+      contenu
     );
   }
   return { client, ...render(element, { wrapper: Fournisseurs, ...options }) };
@@ -46,3 +73,10 @@ export function reponseJson(status: number, corps: unknown): Response {
     headers: { 'Content-Type': 'application/json' },
   });
 }
+
+export const pageDe = <T,>(donnees: T[]) => ({
+  donnees,
+  total: donnees.length,
+  page: 1,
+  limit: 20,
+});
