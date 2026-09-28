@@ -2,6 +2,41 @@
 # Source de vérité : décorateurs @nestjs/swagger des contrôleurs de apps/api/src.
 openapi: 3.0.0
 paths:
+  /api/v1/parametres:
+    get:
+      operationId: ParametresController_lister
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: Liste des paramètres et de leurs contraintes
+      tags:
+        - Paramètres plateforme
+  /api/v1/parametres/{cle}:
+    patch:
+      operationId: ParametresController_modifier
+      parameters:
+        - name: cle
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModificationParametreDto'
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: Modification d’un paramètre (valeur contrôlée, action journalisée)
+      tags:
+        - Paramètres plateforme
   /api/v1/sante:
     get:
       operationId: SanteController_verifier
@@ -18,6 +53,1570 @@ paths:
       summary: État de l'API et de la base de données
       tags:
         - Supervision
+  /api/v1/auth/login:
+    post:
+      description: >-
+        Si la MFA est active, renvoie `mfaRequis: true` et un jeton intermédiaire à présenter sur POST /auth/mfa. Sinon,
+        renvoie l’access token et pose le refresh token en cookie httpOnly.
+      operationId: AuthController_connecter
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnexionDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReponseConnexionDto'
+        '401':
+          description: Identifiants invalides (message générique).
+        '423':
+          description: Compte temporairement verrouillé (RG-AUTH-02).
+      summary: Connexion email + mot de passe (UC-01)
+      tags:
+        - Authentification
+  /api/v1/auth/mfa:
+    post:
+      operationId: AuthController_verifierMfa
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationMfaDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDto'
+      summary: Vérification du code TOTP (UC-01, étape 3)
+      tags:
+        - Authentification
+  /api/v1/auth/refresh:
+    post:
+      operationId: AuthController_rafraichir
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDto'
+      security:
+        - refresh: []
+      summary: Renouvellement de l'access token (rotation du refresh token)
+      tags:
+        - Authentification
+  /api/v1/auth/logout:
+    post:
+      operationId: AuthController_deconnecter
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      summary: 'Déconnexion : révocation du refresh token'
+      tags:
+        - Authentification
+  /api/v1/auth/mot-de-passe-oublie:
+    post:
+      description: Réponse identique que le compte existe ou non.
+      operationId: AuthController_motDePasseOublie
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MotDePasseOublieDto'
+      responses:
+        '202':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDto'
+      summary: Demande de lien de réinitialisation (UC-02, RG-AUTH-04)
+      tags:
+        - Authentification
+  /api/v1/auth/reinitialisation:
+    post:
+      operationId: AuthController_reinitialiser
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReinitialisationDto'
+      responses:
+        '204':
+          description: ''
+      summary: Nouveau mot de passe via lien à usage unique (UC-02)
+      tags:
+        - Authentification
+  /api/v1/auth/activation:
+    post:
+      operationId: AuthController_activer
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivationDto'
+      responses:
+        '204':
+          description: ''
+      summary: 'Activation du compte : mot de passe et consentement explicite (RG-RGPD-01)'
+      tags:
+        - Authentification
+  /api/v1/auth/moi:
+    get:
+      operationId: AuthController_moi
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfilDto'
+      security:
+        - jwt: []
+      summary: Profil de l'utilisateur connecté
+      tags:
+        - Authentification
+  /api/v1/auth/mot-de-passe:
+    patch:
+      operationId: AuthController_changerMotDePasse
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangementMotDePasseDto'
+      responses:
+        '204':
+          description: ''
+      security:
+        - jwt: []
+      summary: Changement de mot de passe (toutes les sessions sont ensuite fermées)
+      tags:
+        - Authentification
+  /api/v1/auth/mfa/enrolement:
+    post:
+      operationId: AuthController_demarrerEnrolement
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrolementMfaDto'
+      security:
+        - jwt: []
+      summary: Démarre la configuration de la double authentification (US-04)
+      tags:
+        - Authentification
+  /api/v1/auth/mfa/enrolement/confirmation:
+    post:
+      operationId: AuthController_confirmerEnrolement
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeMfaDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfilDto'
+      security:
+        - jwt: []
+      summary: Active la double authentification après vérification d’un premier code
+      tags:
+        - Authentification
+  /api/v1/auth/mfa/desactivation:
+    post:
+      operationId: AuthController_desactiverMfa
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesactivationMfaDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfilDto'
+      security:
+        - jwt: []
+      summary: Désactive la MFA (interdit pour les rôles où elle est obligatoire)
+      tags:
+        - Authentification
+  /api/v1/utilisateurs:
+    get:
+      description: 'Portée : tous (admin, responsable), apprenants de ses sessions (formateur), salariés de son entreprise (client).'
+      operationId: UtilisateursController_lister
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: role
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - ADMIN
+              - RESP_FORMATION
+              - FORMATEUR
+              - APPRENANT
+              - CLIENT_ENTREPRISE
+        - name: entrepriseId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+        - name: statut
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - ACTIF
+              - VERROUILLE
+              - DESACTIVE
+              - ANONYMISE
+        - name: recherche
+          required: false
+          in: query
+          description: Recherche sur le nom, le prénom ou l’email
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageUtilisateursDto'
+      security:
+        - jwt: []
+      summary: Liste paginée des comptes (UC-03)
+      tags:
+        - Utilisateurs et rôles
+    post:
+      description: Le consentement explicite est recueilli à l’activation par le titulaire (RG-RGPD-01).
+      operationId: UtilisateursController_creer
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreationUtilisateurDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UtilisateurDetailDto'
+      security:
+        - jwt: []
+      summary: Création de compte et envoi du lien d’activation (US-01, RG-CPT-01)
+      tags:
+        - Utilisateurs et rôles
+  /api/v1/utilisateurs/{id}:
+    get:
+      operationId: UtilisateursController_detail
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UtilisateurDetailDto'
+      security:
+        - jwt: []
+      summary: Détail d’un compte selon la portée RBAC
+      tags:
+        - Utilisateurs et rôles
+    patch:
+      description: 'Administration : tous les champs. Soi-même : nom et prénom (rectification RGPD).'
+      operationId: UtilisateursController_modifier
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModificationUtilisateurDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UtilisateurDetailDto'
+      security:
+        - jwt: []
+      summary: Modification d’un compte (US-02)
+      tags:
+        - Utilisateurs et rôles
+    delete:
+      operationId: UtilisateursController_supprimer
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultatSuppressionDto'
+      security:
+        - jwt: []
+      summary: Suppression ou anonymisation si historique (RG-CPT-02)
+      tags:
+        - Utilisateurs et rôles
+  /api/v1/utilisateurs/{id}/activation:
+    post:
+      operationId: UtilisateursController_renvoyerActivation
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+      security:
+        - jwt: []
+      summary: Renvoi du lien d’activation d’un compte non activé
+      tags:
+        - Utilisateurs et rôles
+  /api/v1/roles:
+    get:
+      operationId: UtilisateursController_roles
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: Liste des rôles (5 profils, REQ-FUNC-001)
+      tags:
+        - Utilisateurs et rôles
+  /api/v1/entreprises:
+    get:
+      operationId: EntreprisesController_lister
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: recherche
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: Liste des entreprises clientes (REQ-FUNC-018)
+      tags:
+        - Entreprises clientes
+    post:
+      operationId: EntreprisesController_creer
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreationEntrepriseDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntrepriseDto'
+      security:
+        - jwt: []
+      summary: Création d’une entreprise cliente
+      tags:
+        - Entreprises clientes
+  /api/v1/entreprises/{id}:
+    get:
+      operationId: EntreprisesController_detail
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntrepriseDto'
+      security:
+        - jwt: []
+      tags:
+        - Entreprises clientes
+    patch:
+      operationId: EntreprisesController_modifier
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModificationEntrepriseDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntrepriseDto'
+      security:
+        - jwt: []
+      tags:
+        - Entreprises clientes
+    delete:
+      operationId: EntreprisesController_supprimer
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+      security:
+        - jwt: []
+      summary: Suppression (uniquement sans compte rattaché)
+      tags:
+        - Entreprises clientes
+  /api/v1/competences:
+    get:
+      operationId: CompetencesController_lister
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: referentiel
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - RNCP
+              - INTERNE
+        - name: recherche
+          required: false
+          in: query
+          description: Mot-clé sur le libellé ou le code RNCP
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: Référentiels RNCP et interne (RG-COMP-01)
+      tags:
+        - Formations et compétences
+    post:
+      operationId: CompetencesController_creer
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreationCompetenceDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetenceDto'
+      security:
+        - jwt: []
+      summary: Création d’une compétence (US-08)
+      tags:
+        - Formations et compétences
+  /api/v1/competences/{id}:
+    patch:
+      operationId: CompetencesController_modifier
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModificationCompetenceDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetenceDto'
+      security:
+        - jwt: []
+      tags:
+        - Formations et compétences
+    delete:
+      operationId: CompetencesController_supprimer
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+      security:
+        - jwt: []
+      summary: Suppression (compétence ni visée ni évaluée)
+      tags:
+        - Formations et compétences
+  /api/v1/formations:
+    get:
+      description: Publiées seulement pour les apprenants et les clients entreprise (RG-FORM-03).
+      operationId: FormationsController_lister
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: statut
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - BROUILLON
+              - PUBLIEE
+              - ARCHIVEE
+        - name: modalite
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - PRESENTIEL
+              - DISTANCIEL
+              - HYBRIDE
+        - name: recherche
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: Catalogue des formations
+      tags:
+        - Formations et compétences
+    post:
+      operationId: FormationsController_creer
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreationFormationDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormationDetailDto'
+      security:
+        - jwt: []
+      summary: Création d’une formation au statut brouillon (UC-04, RG-FORM-01)
+      tags:
+        - Formations et compétences
+  /api/v1/formations/{id}:
+    get:
+      operationId: FormationsController_detail
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormationDetailDto'
+      security:
+        - jwt: []
+      tags:
+        - Formations et compétences
+    patch:
+      operationId: FormationsController_modifier
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModificationFormationDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormationDetailDto'
+      security:
+        - jwt: []
+      summary: Paramétrage, publication, archivage (RG-FORM-03)
+      tags:
+        - Formations et compétences
+    delete:
+      operationId: FormationsController_supprimer
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+      security:
+        - jwt: []
+      summary: Suppression d’un brouillon sans session
+      tags:
+        - Formations et compétences
+  /api/v1/formations/{id}/competences:
+    get:
+      operationId: FormationsController_competences
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: Compétences visées par la formation (RG-FORM-02)
+      tags:
+        - Formations et compétences
+    post:
+      operationId: FormationsController_ajouterCompetence
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AjoutCompetenceDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormationDetailDto'
+      security:
+        - jwt: []
+      summary: Associe une compétence à la formation (US-07)
+      tags:
+        - Formations et compétences
+  /api/v1/formations/{id}/competences/{competenceId}:
+    delete:
+      operationId: FormationsController_retirerCompetence
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: competenceId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormationDetailDto'
+      security:
+        - jwt: []
+      summary: Retire une compétence non encore évaluée
+      tags:
+        - Formations et compétences
+  /api/v1/sessions:
+    get:
+      description: Toutes (admin, responsable), ses sessions (formateur, apprenant), celles de ses salariés (client).
+      operationId: SessionsController_lister
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: formationId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+        - name: periode
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - a_venir
+              - en_cours
+              - passees
+        - name: depuis
+          required: false
+          in: query
+          description: Sessions se déroulant après cette date (AAAA-MM-JJ)
+          schema:
+            type: string
+        - name: jusqua
+          required: false
+          in: query
+          description: Sessions se déroulant avant cette date (AAAA-MM-JJ)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: Liste des sessions selon la portée (UC-07)
+      tags:
+        - Sessions et affectations
+    post:
+      operationId: SessionsController_creer
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreationSessionDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDto'
+      security:
+        - jwt: []
+      summary: Planification d’une session (US-10, RG-SESS-01)
+      tags:
+        - Sessions et affectations
+  /api/v1/sessions/{id}:
+    get:
+      operationId: SessionsController_detail
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDto'
+      security:
+        - jwt: []
+      tags:
+        - Sessions et affectations
+    patch:
+      operationId: SessionsController_modifier
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModificationSessionDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDto'
+      security:
+        - jwt: []
+      summary: Modification des dates, du lieu ou de la capacité
+      tags:
+        - Sessions et affectations
+    delete:
+      operationId: SessionsController_supprimer
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+      security:
+        - jwt: []
+      summary: Suppression d’une session sans inscription
+      tags:
+        - Sessions et affectations
+  /api/v1/sessions/{id}/formateurs/{idFormateur}:
+    post:
+      operationId: SessionsController_affecter
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: idFormateur
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDto'
+      security:
+        - jwt: []
+      summary: Affectation d’un formateur (US-11, RG-SESS-02)
+      tags:
+        - Sessions et affectations
+    delete:
+      operationId: SessionsController_retirer
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: idFormateur
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDto'
+      security:
+        - jwt: []
+      summary: Retrait d’un formateur
+      tags:
+        - Sessions et affectations
+  /api/v1/formateurs/disponibilites:
+    get:
+      operationId: SessionsController_disponibilites
+      parameters:
+        - name: debut
+          required: true
+          in: query
+          schema:
+            example: '2026-09-14'
+            type: string
+        - name: fin
+          required: true
+          in: query
+          schema:
+            example: '2026-09-18'
+            type: string
+        - name: sessionExclue
+          required: false
+          in: query
+          description: Session à ignorer (modification)
+          schema:
+            format: uuid
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DisponibiliteFormateurDto'
+      security:
+        - jwt: []
+      summary: Formateurs et conflits d’agenda sur une période
+      tags:
+        - Sessions et affectations
+  /api/v1/inscriptions:
+    get:
+      description: 'Portée RBAC : toutes, ses sessions, son parcours ou son entreprise.'
+      operationId: InscriptionsController_lister
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sessionId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+        - name: statut
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - EN_ATTENTE
+              - VALIDEE
+              - ANNULEE
+              - TERMINEE
+        - name: entrepriseId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+        - name: apprenantId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: Suivi des inscriptions (US-13), filtres statut / session / entreprise
+      tags:
+        - Inscriptions
+  /api/v1/inscriptions/{id}:
+    get:
+      operationId: InscriptionsController_detail
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscriptionDto'
+      security:
+        - jwt: []
+      tags:
+        - Inscriptions
+    patch:
+      operationId: InscriptionsController_modifier
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModificationInscriptionDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscriptionDto'
+      security:
+        - jwt: []
+      summary: 'Changement de statut : valider, annuler, terminer (RG-INSC-02)'
+      tags:
+        - Inscriptions
+  /api/v1/sessions/{id}/inscriptions:
+    post:
+      operationId: InscriptionsController_inscrire
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreationInscriptionDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultatInscriptionDto'
+      security:
+        - jwt: []
+      summary: Inscription d’un apprenant (US-12, RG-INSC-01/03, RG-SESS-03)
+      tags:
+        - Inscriptions
+  /api/v1/inscriptions/{id}/evaluations:
+    get:
+      description: Portée RBAC ; le client entreprise ne reçoit que la synthèse (sans note).
+      operationId: EvaluationsController_lister
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EvaluationDto'
+      security:
+        - jwt: []
+      summary: Notes et acquisitions d’une inscription (US-17, US-18)
+      tags:
+        - Évaluations
+    post:
+      operationId: EvaluationsController_saisir
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaisieNoteDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationDto'
+      security:
+        - jwt: []
+      summary: Saisie d’une note par compétence (US-16, RG-EVAL-01/02)
+      tags:
+        - Évaluations
+  /api/v1/evaluations/{id}:
+    patch:
+      operationId: EvaluationsController_corriger
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CorrectionNoteDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationDto'
+      security:
+        - jwt: []
+      summary: Correction d’une note (ancienne valeur journalisée, UC-08 A1)
+      tags:
+        - Évaluations
+  /api/v1/sessions/{id}/feuille-evaluation:
+    get:
+      operationId: EvaluationsController_feuille
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeuilleEvaluationDto'
+      security:
+        - jwt: []
+      summary: Feuille d’évaluation d’une session (écran 16)
+      tags:
+        - Évaluations
+    put:
+      operationId: EvaluationsController_enregistrerFeuille
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaisieFeuilleDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeuilleEvaluationDto'
+      security:
+        - jwt: []
+      summary: Enregistrement groupé des notes de la session (formateur affecté)
+      tags:
+        - Évaluations
+  /api/v1/documents:
+    get:
+      description: 'Portée RBAC : l’apprenant ne voit que ses documents, le client ceux de ses salariés.'
+      operationId: DocumentsController_lister
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sessionId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+        - name: apprenantId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+        - name: type
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - ATTESTATION
+              - CERTIFICAT
+      responses:
+        '200':
+          description: ''
+      security:
+        - jwt: []
+      summary: Attestations et certificats visibles (US-20)
+      tags:
+        - Documents et parcours
+  /api/v1/documents/{id}:
+    get:
+      operationId: DocumentsController_lien
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LienTelechargementDto'
+      security:
+        - jwt: []
+      summary: Lien de téléchargement signé de courte durée (UC-10, ADR-05)
+      tags:
+        - Documents et parcours
+  /api/v1/documents/{id}/fichier:
+    get:
+      description: >-
+        Route sans jeton : la signature HMAC, l’expiration, le compte, la portée RBAC et l’empreinte SHA-256 du fichier
+        sont vérifiés.
+      operationId: DocumentsController_fichier
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: expire
+          required: true
+          in: query
+          description: Expiration (secondes depuis l’époque Unix)
+          schema:
+            type: number
+        - name: u
+          required: true
+          in: query
+          description: Utilisateur ayant obtenu le lien
+          schema:
+            format: uuid
+            type: string
+        - name: signature
+          required: true
+          in: query
+          description: Signature HMAC-SHA256 (base64url)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+      security:
+        - jwt: []
+      summary: Téléchargement du PDF via l’URL signée
+      tags:
+        - Documents et parcours
+  /api/v1/inscriptions/{id}/documents:
+    post:
+      operationId: DocumentsController_generer
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerationDocumentDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentDto'
+      security:
+        - jwt: []
+      summary: Génération d’une attestation ou d’un certificat (US-19, RG-CERT-01/02)
+      tags:
+        - Documents et parcours
+  /api/v1/sessions/{id}/documents:
+    get:
+      operationId: DocumentsController_bilan
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BilanDocumentsSessionDto'
+      security:
+        - jwt: []
+      summary: Bilan de génération des documents d’une session (écran 14)
+      tags:
+        - Documents et parcours
+  /api/v1/utilisateurs/{id}/parcours:
+    get:
+      description: Soi-même, responsable formation, administrateur.
+      operationId: DocumentsController_parcours
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParcoursDto'
+      security:
+        - jwt: []
+      summary: Historique complet du parcours (US-21, RG-HIST-01)
+      tags:
+        - Documents et parcours
+  /api/v1/exports:
+    get:
+      description: >-
+        Tous les profils, chacun limité à sa portée : global (administration), ses sessions (formateur), son parcours
+        (apprenant), ses salariés (client entreprise).
+      operationId: ExportsController_exporter
+      parameters:
+        - name: jeu
+          required: true
+          in: query
+          description: >-
+            inscriptions : liste des inscrits ; resultats : synthèse par apprenant ; evaluations : détail des notes par
+            compétence
+          schema:
+            type: string
+            enum:
+              - inscriptions
+              - resultats
+              - evaluations
+        - name: format
+          required: true
+          in: query
+          schema:
+            type: string
+            enum:
+              - csv
+              - pdf
+        - name: sessionId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+        - name: formationId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+        - name: entrepriseId
+          required: false
+          in: query
+          description: Réservé à l’administrateur et au responsable formation (RG-DASH-03)
+          schema:
+            format: uuid
+            type: string
+        - name: du
+          required: false
+          in: query
+          description: Sessions se terminant à partir de
+          schema:
+            example: '2026-01-01'
+            type: string
+        - name: au
+          required: false
+          in: query
+          description: Sessions commençant jusqu’au
+          schema:
+            example: '2026-12-31'
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+      security:
+        - jwt: []
+      summary: Export PDF ou CSV du périmètre autorisé (US-22, RG-EXP-01)
+      tags:
+        - Exports
 info:
   title: FORMACTIV — API REST
   description: >-
@@ -46,4 +1645,1344 @@ components:
       type: apiKey
       in: cookie
       name: formactiv_refresh
-  schemas: {}
+  schemas:
+    ModificationParametreDto:
+      type: object
+      properties:
+        valeur:
+          type: string
+          example: '12'
+      required:
+        - valeur
+    ConnexionDto:
+      type: object
+      properties:
+        email:
+          type: string
+          example: nadia.rey@formactiv.fr
+        motDePasse:
+          type: string
+          format: password
+      required:
+        - email
+        - motDePasse
+    EntrepriseResumeDto:
+      type: object
+      properties:
+        id:
+          type: string
+        raisonSociale:
+          type: string
+      required:
+        - id
+        - raisonSociale
+    ProfilDto:
+      type: object
+      properties:
+        id:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - RESP_FORMATION
+            - FORMATEUR
+            - APPRENANT
+            - CLIENT_ENTREPRISE
+        mfaActive:
+          type: boolean
+        mfaEnrolementRequis:
+          type: boolean
+          description: MFA obligatoire pour le rôle mais non configurée (RG-AUTH-03).
+        entreprise:
+          nullable: true
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/EntrepriseResumeDto'
+      required:
+        - id
+        - nom
+        - prenom
+        - email
+        - role
+        - mfaActive
+        - mfaEnrolementRequis
+    ReponseConnexionDto:
+      type: object
+      properties:
+        mfaRequis:
+          type: boolean
+          description: Vrai si un code de double authentification est attendu.
+        jetonMfa:
+          type: string
+          description: 'Présent si mfaRequis : à renvoyer sur POST /auth/mfa.'
+        accessToken:
+          type: string
+        expireDans:
+          type: number
+        utilisateur:
+          $ref: '#/components/schemas/ProfilDto'
+      required:
+        - mfaRequis
+    VerificationMfaDto:
+      type: object
+      properties:
+        jetonMfa:
+          type: string
+          description: Jeton intermédiaire reçu à l’étape de connexion (5 min).
+        code:
+          type: string
+          example: '123456'
+      required:
+        - jetonMfa
+        - code
+    SessionDto:
+      type: object
+      properties:
+        id:
+          type: string
+        formation:
+          $ref: '#/components/schemas/FormationDeSession'
+        dateDebut:
+          type: string
+        dateFin:
+          type: string
+        lieu:
+          type: object
+          nullable: true
+        capaciteMax:
+          type: object
+          nullable: true
+        statutTemporel:
+          type: string
+          enum:
+            - A_VENIR
+            - EN_COURS
+            - TERMINEE
+        nombreInscrits:
+          type: number
+          description: Inscriptions en attente, validées ou terminées
+        placesOccupees:
+          type: number
+          description: Inscriptions occupant une place (RG-SESS-03)
+        formateurs:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormateurAffecteDto'
+        alerteSansFormateur:
+          type: boolean
+          description: Sans formateur à l’approche du début (RG-SESS-02)
+        notesManquantes:
+          type: number
+          description: Notes attendues non saisies (UC-08)
+      required:
+        - id
+        - formation
+        - dateDebut
+        - dateFin
+        - statutTemporel
+        - nombreInscrits
+        - placesOccupees
+        - formateurs
+        - alerteSansFormateur
+        - notesManquantes
+    MotDePasseOublieDto:
+      type: object
+      properties:
+        email:
+          type: string
+          example: lea.martin@mail.fr
+      required:
+        - email
+    MessageDto:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    ReinitialisationDto:
+      type: object
+      properties:
+        jeton:
+          type: string
+          description: Jeton à usage unique reçu par email (30 min).
+        motDePasse:
+          type: string
+          format: password
+          description: Nouveau mot de passe conforme à RG-AUTH-01.
+      required:
+        - jeton
+        - motDePasse
+    ActivationDto:
+      type: object
+      properties:
+        jeton:
+          type: string
+          description: Jeton à usage unique reçu par email (30 min).
+        motDePasse:
+          type: string
+          format: password
+          description: Nouveau mot de passe conforme à RG-AUTH-01.
+        consentementGestionCompte:
+          type: boolean
+          description: Consentement au traitement des données pour la gestion du compte (obligatoire).
+        consentementSatisfaction:
+          type: boolean
+          description: Consentement optionnel aux questionnaires de satisfaction.
+      required:
+        - jeton
+        - motDePasse
+        - consentementGestionCompte
+        - consentementSatisfaction
+    ChangementMotDePasseDto:
+      type: object
+      properties:
+        motDePasseActuel:
+          type: string
+          format: password
+        nouveauMotDePasse:
+          type: string
+          format: password
+      required:
+        - motDePasseActuel
+        - nouveauMotDePasse
+    EnrolementMfaDto:
+      type: object
+      properties:
+        secret:
+          type: string
+          description: Secret base32 pour une saisie manuelle dans l’application.
+        uri:
+          type: string
+          description: URI otpauth://
+        qrCode:
+          type: string
+          description: QR code (image PNG en data URL).
+      required:
+        - secret
+        - uri
+        - qrCode
+    CodeMfaDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: '123456'
+      required:
+        - code
+    DesactivationMfaDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: '123456'
+        motDePasse:
+          type: string
+          format: password
+      required:
+        - code
+        - motDePasse
+    UtilisateurResumeDto:
+      type: object
+      properties:
+        id:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - RESP_FORMATION
+            - FORMATEUR
+            - APPRENANT
+            - CLIENT_ENTREPRISE
+        statut:
+          type: string
+          enum:
+            - ACTIF
+            - VERROUILLE
+            - DESACTIVE
+            - ANONYMISE
+        entreprise:
+          type: object
+          nullable: true
+      required:
+        - id
+        - nom
+        - prenom
+        - email
+        - role
+        - statut
+    PageUtilisateursDto:
+      type: object
+      properties:
+        donnees:
+          type: array
+          items:
+            $ref: '#/components/schemas/UtilisateurResumeDto'
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+      required:
+        - donnees
+        - total
+        - page
+        - limit
+    CreationUtilisateurDto:
+      type: object
+      properties:
+        nom:
+          type: string
+          example: Martin
+        prenom:
+          type: string
+          example: Léa
+        email:
+          type: string
+          example: lea.martin@mail.fr
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - RESP_FORMATION
+            - FORMATEUR
+            - APPRENANT
+            - CLIENT_ENTREPRISE
+          description: Rôle unique du compte (RG-CPT-01)
+        entrepriseId:
+          type: object
+          format: uuid
+          nullable: true
+      required:
+        - nom
+        - prenom
+        - email
+        - role
+    UtilisateurDetailDto:
+      type: object
+      properties:
+        id:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - RESP_FORMATION
+            - FORMATEUR
+            - APPRENANT
+            - CLIENT_ENTREPRISE
+        statut:
+          type: string
+          enum:
+            - ACTIF
+            - VERROUILLE
+            - DESACTIVE
+            - ANONYMISE
+        entreprise:
+          type: object
+          nullable: true
+        mfaActive:
+          type: boolean
+        active:
+          type: boolean
+          description: Faux tant que le compte n’a pas été activé par son titulaire.
+        verrouilleJusquA:
+          type: object
+          nullable: true
+        dateDerniereConnexion:
+          type: object
+          nullable: true
+        dateCreation:
+          format: date-time
+          type: string
+      required:
+        - id
+        - nom
+        - prenom
+        - email
+        - role
+        - statut
+        - mfaActive
+        - active
+        - dateCreation
+    ModificationUtilisateurDto:
+      type: object
+      properties:
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - RESP_FORMATION
+            - FORMATEUR
+            - APPRENANT
+            - CLIENT_ENTREPRISE
+        entrepriseId:
+          type: object
+          format: uuid
+          nullable: true
+        statut:
+          type: string
+          enum:
+            - ACTIF
+            - DESACTIVE
+          description: ACTIF déverrouille ou réactive le compte ; DESACTIVE ferme ses sessions.
+        mfaActive:
+          type: boolean
+          description: false réinitialise la double authentification (perte du téléphone).
+    ResultatSuppressionDto:
+      type: object
+      properties:
+        resultat:
+          type: string
+          enum:
+            - SUPPRIME
+            - ANONYMISE
+          description: RG-CPT-02
+      required:
+        - resultat
+    EntrepriseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        raisonSociale:
+          type: string
+        siret:
+          type: object
+          nullable: true
+        emailContact:
+          type: string
+        nombreComptes:
+          type: number
+          description: Nombre de comptes rattachés (salariés et représentants)
+        dateCreation:
+          format: date-time
+          type: string
+      required:
+        - id
+        - raisonSociale
+        - emailContact
+        - nombreComptes
+        - dateCreation
+    CreationEntrepriseDto:
+      type: object
+      properties:
+        raisonSociale:
+          type: string
+          example: Groupe Oxalys
+        siret:
+          type: object
+          example: '81234567800013'
+          nullable: true
+        emailContact:
+          type: string
+          example: formation@oxalys.fr
+      required:
+        - raisonSociale
+        - emailContact
+    ModificationEntrepriseDto:
+      type: object
+      properties:
+        raisonSociale:
+          type: string
+          example: Groupe Oxalys
+        siret:
+          type: object
+          example: '81234567800013'
+          nullable: true
+        emailContact:
+          type: string
+          example: formation@oxalys.fr
+    CreationCompetenceDto:
+      type: object
+      properties:
+        libelle:
+          type: string
+          example: Écrire des requêtes SQL
+        typeReferentiel:
+          type: string
+          enum:
+            - RNCP
+            - INTERNE
+        codeRncp:
+          type: object
+          example: RNCP36125-C2
+          description: Obligatoire pour le référentiel RNCP (RG-COMP-01).
+      required:
+        - libelle
+        - typeReferentiel
+    CompetenceDto:
+      type: object
+      properties:
+        id:
+          type: string
+        libelle:
+          type: string
+        typeReferentiel:
+          type: string
+          enum:
+            - RNCP
+            - INTERNE
+        codeRncp:
+          type: object
+          nullable: true
+        nombreFormations:
+          type: number
+          description: Nombre de formations qui visent cette compétence
+      required:
+        - id
+        - libelle
+        - typeReferentiel
+        - nombreFormations
+    ModificationCompetenceDto:
+      type: object
+      properties:
+        libelle:
+          type: string
+          example: Écrire des requêtes SQL
+        typeReferentiel:
+          type: string
+          enum:
+            - RNCP
+            - INTERNE
+        codeRncp:
+          type: object
+          example: RNCP36125-C2
+          description: Obligatoire pour le référentiel RNCP (RG-COMP-01).
+    CompetenceVisee:
+      type: object
+      properties:
+        id:
+          type: string
+        libelle:
+          type: string
+        typeReferentiel:
+          type: string
+          enum:
+            - RNCP
+            - INTERNE
+        codeRncp:
+          type: object
+          nullable: true
+      required:
+        - id
+        - libelle
+        - typeReferentiel
+    FormationDetailDto:
+      type: object
+      properties:
+        id:
+          type: string
+        intitule:
+          type: string
+        dureeHeures:
+          type: number
+        modalite:
+          type: string
+          enum:
+            - PRESENTIEL
+            - DISTANCIEL
+            - HYBRIDE
+        prerequis:
+          type: string
+        statut:
+          type: string
+          enum:
+            - BROUILLON
+            - PUBLIEE
+            - ARCHIVEE
+        seuilAcquisition:
+          type: number
+        nombreCompetences:
+          type: number
+        nombreSessions:
+          type: number
+        competences:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetenceVisee'
+        dateCreation:
+          format: date-time
+          type: string
+        dateModification:
+          format: date-time
+          type: string
+      required:
+        - id
+        - intitule
+        - dureeHeures
+        - modalite
+        - prerequis
+        - statut
+        - seuilAcquisition
+        - nombreCompetences
+        - nombreSessions
+        - competences
+        - dateCreation
+        - dateModification
+    CreationFormationDto:
+      type: object
+      properties:
+        intitule:
+          type: string
+          example: Cybersécurité fondamentaux
+        dureeHeures:
+          type: number
+          example: 35
+          description: Durée en heures (RG-FORM-01)
+        modalite:
+          type: string
+          enum:
+            - PRESENTIEL
+            - DISTANCIEL
+            - HYBRIDE
+        prerequis:
+          type: string
+          example: Bases en informatique
+          description: « Aucun » par défaut
+        seuilAcquisition:
+          type: number
+          example: 10
+          description: Seuil d’acquisition sur 20 (RG-EVAL-02) ; paramètre plateforme par défaut
+        competenceIds:
+          description: Compétences visées (RG-FORM-02)
+          type: array
+          items:
+            type: string
+      required:
+        - intitule
+        - dureeHeures
+        - modalite
+    ModificationFormationDto:
+      type: object
+      properties:
+        intitule:
+          type: string
+          example: Cybersécurité fondamentaux
+        dureeHeures:
+          type: number
+          example: 35
+          description: Durée en heures (RG-FORM-01)
+        modalite:
+          type: string
+          enum:
+            - PRESENTIEL
+            - DISTANCIEL
+            - HYBRIDE
+        prerequis:
+          type: string
+          example: Bases en informatique
+          description: « Aucun » par défaut
+        seuilAcquisition:
+          type: number
+          example: 10
+          description: Seuil d’acquisition sur 20 (RG-EVAL-02) ; paramètre plateforme par défaut
+        statut:
+          type: string
+          enum:
+            - BROUILLON
+            - PUBLIEE
+            - ARCHIVEE
+          description: Publication / archivage (RG-FORM-03)
+    AjoutCompetenceDto:
+      type: object
+      properties:
+        competenceId:
+          type: string
+          format: uuid
+      required:
+        - competenceId
+    FormationDeSession:
+      type: object
+      properties:
+        id:
+          type: string
+        intitule:
+          type: string
+        modalite:
+          type: string
+          enum:
+            - PRESENTIEL
+            - DISTANCIEL
+            - HYBRIDE
+        statut:
+          type: string
+          enum:
+            - BROUILLON
+            - PUBLIEE
+            - ARCHIVEE
+      required:
+        - id
+        - intitule
+        - modalite
+        - statut
+    ConflitDto:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        formation:
+          type: string
+        premierJour:
+          type: string
+          description: Premier jour commun (AAAA-MM-JJ)
+      required:
+        - sessionId
+        - formation
+        - premierJour
+    FormateurAffecteDto:
+      type: object
+      properties:
+        id:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        conflits:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConflitDto'
+      required:
+        - id
+        - nom
+        - prenom
+        - conflits
+    CreationSessionDto:
+      type: object
+      properties:
+        formationId:
+          type: string
+          format: uuid
+          description: Formation publiée (précondition UC-05)
+        dateDebut:
+          type: string
+          example: '2026-09-14'
+        dateFin:
+          type: string
+          example: '2026-09-18'
+          description: Postérieure ou égale au début (RG-SESS-01)
+        capaciteMax:
+          type: object
+          example: 12
+          nullable: true
+          description: RG-SESS-03 ([À VALIDER])
+        lieu:
+          type: string
+          example: Toulouse
+        formateurIds:
+          description: Formateurs affectés (RG-SESS-02)
+          type: array
+          items:
+            type: string
+      required:
+        - formationId
+        - dateDebut
+        - dateFin
+    ModificationSessionDto:
+      type: object
+      properties:
+        dateDebut:
+          type: string
+          example: '2026-09-14'
+        dateFin:
+          type: string
+          example: '2026-09-18'
+          description: Postérieure ou égale au début (RG-SESS-01)
+        capaciteMax:
+          type: object
+          example: 12
+          nullable: true
+          description: RG-SESS-03 ([À VALIDER])
+        lieu:
+          type: string
+          example: Toulouse
+    DisponibiliteFormateurDto:
+      type: object
+      properties:
+        id:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        conflits:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConflitDto'
+      required:
+        - id
+        - nom
+        - prenom
+        - conflits
+    ApprenantInscrit:
+      type: object
+      properties:
+        id:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+          description: Visible de l’administration uniquement (minimisation)
+        entreprise:
+          type: object
+          nullable: true
+      required:
+        - id
+        - nom
+        - prenom
+    SessionInscrite:
+      type: object
+      properties:
+        id:
+          type: string
+        dateDebut:
+          type: string
+        dateFin:
+          type: string
+        lieu:
+          type: object
+          nullable: true
+        formation:
+          type: object
+      required:
+        - id
+        - dateDebut
+        - dateFin
+        - formation
+    InscriptionDto:
+      type: object
+      properties:
+        id:
+          type: string
+        statut:
+          type: string
+          enum:
+            - EN_ATTENTE
+            - VALIDEE
+            - ANNULEE
+            - TERMINEE
+        dateInscription:
+          format: date-time
+          type: string
+        prerequisRequis:
+          type: boolean
+          description: La formation comporte des prérequis
+        prerequisVerifies:
+          type: boolean
+        apprenant:
+          $ref: '#/components/schemas/ApprenantInscrit'
+        session:
+          $ref: '#/components/schemas/SessionInscrite'
+      required:
+        - id
+        - statut
+        - dateInscription
+        - prerequisRequis
+        - prerequisVerifies
+        - apprenant
+        - session
+    CreationInscriptionDto:
+      type: object
+      properties:
+        apprenantId:
+          type: string
+          format: uuid
+      required:
+        - apprenantId
+    ResultatInscriptionDto:
+      type: object
+      properties:
+        inscription:
+          $ref: '#/components/schemas/InscriptionDto'
+        avertissements:
+          description: Avertissements non bloquants (ex. PREREQUIS_A_VERIFIER, RG-INSC-03)
+          type: array
+          items:
+            type: string
+      required:
+        - inscription
+        - avertissements
+    ModificationInscriptionDto:
+      type: object
+      properties:
+        statut:
+          type: string
+          enum:
+            - EN_ATTENTE
+            - VALIDEE
+            - ANNULEE
+            - TERMINEE
+          description: Cycle RG-INSC-02
+        prerequisVerifies:
+          type: boolean
+          description: Confirme que les prérequis de la formation sont acquis (RG-INSC-03)
+    CompetenceEvaluee:
+      type: object
+      properties:
+        id:
+          type: string
+        libelle:
+          type: string
+        typeReferentiel:
+          type: string
+          enum:
+            - RNCP
+            - INTERNE
+      required:
+        - id
+        - libelle
+        - typeReferentiel
+    EvaluationDto:
+      type: object
+      properties:
+        id:
+          type: string
+        competence:
+          $ref: '#/components/schemas/CompetenceEvaluee'
+        note:
+          type: object
+          nullable: true
+          description: Masquée pour le client entreprise (synthèse seulement, [À VALIDER])
+        acquise:
+          type: boolean
+        dateSaisie:
+          format: date-time
+          type: string
+        formateur:
+          type: object
+          nullable: true
+      required:
+        - id
+        - competence
+        - acquise
+        - dateSaisie
+    SaisieNoteDto:
+      type: object
+      properties:
+        competenceId:
+          type: string
+          format: uuid
+        note:
+          type: number
+          example: 14.5
+          minimum: 0
+          maximum: 20
+      required:
+        - competenceId
+        - note
+    CorrectionNoteDto:
+      type: object
+      properties:
+        note:
+          type: number
+          example: 12
+          minimum: 0
+          maximum: 20
+      required:
+        - note
+    LigneFeuille:
+      type: object
+      properties:
+        inscriptionId:
+          type: string
+        statut:
+          type: string
+          enum:
+            - EN_ATTENTE
+            - VALIDEE
+            - ANNULEE
+            - TERMINEE
+        apprenant:
+          type: object
+        notes:
+          type: object
+          additionalProperties: true
+          description: 'Notes indexées par identifiant de compétence : { evaluationId, note, acquise } ou null'
+        acquises:
+          type: number
+        total:
+          type: number
+      required:
+        - inscriptionId
+        - statut
+        - apprenant
+        - notes
+        - acquises
+        - total
+    FeuilleEvaluationDto:
+      type: object
+      properties:
+        session:
+          type: object
+        competences:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetenceEvaluee'
+        lignes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LigneFeuille'
+        modifiable:
+          type: boolean
+          description: L’utilisateur peut saisir ou corriger (formateur affecté)
+      required:
+        - session
+        - competences
+        - lignes
+        - modifiable
+    NoteDeFeuilleDto:
+      type: object
+      properties:
+        competenceId:
+          type: string
+          format: uuid
+        note:
+          type: number
+          example: 14.5
+          minimum: 0
+          maximum: 20
+        inscriptionId:
+          type: string
+          format: uuid
+      required:
+        - competenceId
+        - note
+        - inscriptionId
+    SaisieFeuilleDto:
+      type: object
+      properties:
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteDeFeuilleDto'
+      required:
+        - notes
+    LienTelechargementDto:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL relative signée, valable quelques minutes
+          example: /api/v1/documents/…/fichier?expire=…&u=…&signature=…
+        expireLe:
+          format: date-time
+          type: string
+        nomFichier:
+          type: string
+          example: formactiv-C-2026-0412.pdf
+      required:
+        - url
+        - expireLe
+        - nomFichier
+    GenerationDocumentDto:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - ATTESTATION
+            - CERTIFICAT
+          description: RG-CERT-01
+      required:
+        - type
+    PersonneDocument:
+      type: object
+      properties:
+        id:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+      required:
+        - id
+        - nom
+        - prenom
+    FormationDocument:
+      type: object
+      properties:
+        id:
+          type: string
+        intitule:
+          type: string
+      required:
+        - id
+        - intitule
+    SessionDocument:
+      type: object
+      properties:
+        id:
+          type: string
+        dateDebut:
+          type: string
+          example: '2026-09-14'
+        dateFin:
+          type: string
+          example: '2026-09-18'
+      required:
+        - id
+        - dateDebut
+        - dateFin
+    DocumentDto:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - ATTESTATION
+            - CERTIFICAT
+        reference:
+          type: string
+          example: C-2026-0412
+        dateGeneration:
+          format: date-time
+          type: string
+        inscriptionId:
+          type: string
+        apprenant:
+          $ref: '#/components/schemas/PersonneDocument'
+        formation:
+          $ref: '#/components/schemas/FormationDocument'
+        session:
+          $ref: '#/components/schemas/SessionDocument'
+        emetteur:
+          type: object
+          description: Émetteur (RG-CERT-02)
+      required:
+        - id
+        - type
+        - reference
+        - dateGeneration
+        - inscriptionId
+        - apprenant
+        - formation
+        - session
+        - emetteur
+    DocumentResume:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - ATTESTATION
+            - CERTIFICAT
+        reference:
+          type: string
+        dateGeneration:
+          format: date-time
+          type: string
+      required:
+        - id
+        - type
+        - reference
+        - dateGeneration
+    LigneBilanDocuments:
+      type: object
+      properties:
+        inscriptionId:
+          type: string
+        statut:
+          type: string
+          enum:
+            - EN_ATTENTE
+            - VALIDEE
+            - ANNULEE
+            - TERMINEE
+        apprenant:
+          $ref: '#/components/schemas/PersonneDocument'
+        competencesAcquises:
+          type: number
+          example: 4
+        competencesVisees:
+          type: number
+          example: 4
+        typesGenerables:
+          type: array
+          items:
+            type: string
+            enum:
+              - ATTESTATION
+              - CERTIFICAT
+        documentPropose:
+          type: string
+          enum:
+            - ATTESTATION
+            - CERTIFICAT
+          nullable: true
+          description: UC-09 A1
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentResume'
+      required:
+        - inscriptionId
+        - statut
+        - apprenant
+        - competencesAcquises
+        - competencesVisees
+        - typesGenerables
+        - documents
+    BilanDocumentsSessionDto:
+      type: object
+      properties:
+        session:
+          type: object
+        peutGenerer:
+          type: boolean
+        lignes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LigneBilanDocuments'
+      required:
+        - session
+        - peutGenerer
+        - lignes
+    EvaluationParcours:
+      type: object
+      properties:
+        competenceId:
+          type: string
+        libelle:
+          type: string
+        note:
+          type: object
+          nullable: true
+        acquise:
+          type: boolean
+        dateSaisie:
+          type: object
+          nullable: true
+      required:
+        - competenceId
+        - libelle
+        - acquise
+    EtapeParcours:
+      type: object
+      properties:
+        inscriptionId:
+          type: string
+        statut:
+          type: string
+          enum:
+            - EN_ATTENTE
+            - VALIDEE
+            - ANNULEE
+            - TERMINEE
+        dateInscription:
+          format: date-time
+          type: string
+        formation:
+          type: object
+        session:
+          type: object
+        moyenne:
+          type: object
+          nullable: true
+          description: Moyenne des notes saisies
+        partielle:
+          type: boolean
+          description: Toutes les compétences ne sont pas encore évaluées
+        competencesAcquises:
+          type: number
+        competencesVisees:
+          type: number
+        evaluations:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvaluationParcours'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentResume'
+      required:
+        - inscriptionId
+        - statut
+        - dateInscription
+        - formation
+        - session
+        - partielle
+        - competencesAcquises
+        - competencesVisees
+        - evaluations
+        - documents
+    CompetenceParcours:
+      type: object
+      properties:
+        id:
+          type: string
+        libelle:
+          type: string
+        typeReferentiel:
+          type: string
+          enum:
+            - RNCP
+            - INTERNE
+        codeRncp:
+          type: object
+          nullable: true
+        meilleureNote:
+          type: object
+          nullable: true
+        acquise:
+          type: boolean
+        progression:
+          type: number
+          description: Progression vers le seuil d’acquisition (0 à 100)
+      required:
+        - id
+        - libelle
+        - typeReferentiel
+        - acquise
+        - progression
+    ParcoursDto:
+      type: object
+      properties:
+        apprenant:
+          $ref: '#/components/schemas/PersonneDocument'
+        etapes:
+          type: array
+          items:
+            $ref: '#/components/schemas/EtapeParcours'
+        competences:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetenceParcours'
+      required:
+        - apprenant
+        - etapes
+        - competences
