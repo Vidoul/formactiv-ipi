@@ -116,6 +116,13 @@ export function normaliserException(exception: unknown): CorpsErreur {
           code: 'RESSOURCE_INTROUVABLE',
           message: 'Ressource introuvable.',
         };
+      // Conflit de sérialisation entre deux transactions concurrentes (ex. dernière place).
+      case 'P2034':
+        return {
+          statusCode: HttpStatus.CONFLICT,
+          code: 'CONFLIT_CONCURRENT',
+          message: 'Une opération concurrente a modifié ces données : veuillez réessayer.',
+        };
     }
   }
 

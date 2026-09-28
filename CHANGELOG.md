@@ -41,6 +41,11 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
   publiée / archivée (RG-FORM-03), publication subordonnée aux compétences visées (RG-FORM-02),
   catalogue publié seul visible des apprenants et clients, seuil d'acquisition verrouillé après
   les premières notes, référentiels RNCP / interne (RG-COMP-01) ; écrans Figma 10 et 11.
+- **Lot 3 — Sessions et inscriptions (US-10..15, UC-05/06/07)** : planification contrôlée
+  (RG-SESS-01), affectation des formateurs avec conflits d'agenda et alerte « sans formateur »
+  (RG-SESS-02), capacité garantie même en accès concurrent (RG-SESS-03), inscriptions uniques
+  (RG-INSC-01), cycle de statuts (RG-INSC-02) et prérequis à vérifier (RG-INSC-03) ; écrans
+  Figma 12 (planification), 13 (suivi des inscriptions) et 15 (Mes sessions du formateur).
 
 ### Sécurité
 
