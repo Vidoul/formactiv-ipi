@@ -331,6 +331,8 @@ fieldset.groupe legend {
   display: block;
   width: 100%;
   height: auto;
+  /* Peu de barres : le dessin reste lisible sans s'étirer en hauteur (centré par le viewBox). */
+  max-height: 14rem;
 }
 .graphique-barres text {
   font-family: var(--police);

@@ -8,6 +8,13 @@
 export const DATE_ISO = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 export const MESSAGE_DATE = 'Date attendue au format AAAA-MM-JJ.';
 
+/** Date « AAAA-MM-JJ » existant au calendrier (refuse « 2026-02-30 », que Date décalerait). */
+export function dateIsoValide(valeur: string): boolean {
+  if (!DATE_ISO.test(valeur)) return false;
+  const date = new Date(`${valeur}T00:00:00.000Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === valeur;
+}
+
 const FORMAT_ISO_PARIS = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Europe/Paris',
   year: 'numeric',

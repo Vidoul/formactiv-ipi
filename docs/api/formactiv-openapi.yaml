@@ -1617,6 +1617,176 @@ paths:
       summary: Export PDF ou CSV du périmètre autorisé (US-22, RG-EXP-01)
       tags:
         - Exports
+  /api/v1/reporting/indicateurs:
+    get:
+      description: >-
+        Portée par rôle (RG-DASH-02) ; filtres période, formation et entreprise — ce dernier réservé à l’administration
+        (RG-DASH-03). Comparaison avec la période précédente.
+      operationId: ReportingController_indicateurs
+      parameters:
+        - name: du
+          required: false
+          in: query
+          description: 'Début de période (défaut : 1er janvier)'
+          schema:
+            example: '2026-07-01'
+            type: string
+        - name: au
+          required: false
+          in: query
+          description: 'Fin de période (défaut : 31 décembre)'
+          schema:
+            example: '2026-09-30'
+            type: string
+        - name: formationId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+        - name: entrepriseId
+          required: false
+          in: query
+          description: Administration uniquement (RG-DASH-03)
+          schema:
+            format: uuid
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndicateursDto'
+      security:
+        - jwt: []
+      summary: Taux de réussite, complétion, satisfaction (US-23, RG-DASH-01)
+      tags:
+        - Reporting et tableaux de bord
+  /api/v1/reporting/administration:
+    get:
+      operationId: ReportingController_administration
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TableauAdministrationDto'
+      security:
+        - jwt: []
+      summary: Tableau de bord technique et conformité (écran 05, US-27)
+      tags:
+        - Reporting et tableaux de bord
+  /api/v1/reporting/formateur:
+    get:
+      operationId: ReportingController_formateur
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TableauFormateurDto'
+      security:
+        - jwt: []
+      summary: Progression des groupes du formateur (écran 17, US-25)
+      tags:
+        - Reporting et tableaux de bord
+  /api/v1/reporting/apprenant:
+    get:
+      operationId: ReportingController_apprenant
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TableauApprenantDto'
+      security:
+        - jwt: []
+      summary: Progression et prochaines échéances de l’apprenant (écran 18, US-24)
+      tags:
+        - Reporting et tableaux de bord
+  /api/v1/reporting/salaries:
+    get:
+      description: 'Client entreprise : ses seuls salariés, sans note détaillée (minimisation).'
+      operationId: ReportingController_salaries
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: formationId
+          required: false
+          in: query
+          schema:
+            format: uuid
+            type: string
+        - name: etat
+          required: false
+          in: query
+          description: Avancement temporel de la session
+          schema:
+            type: string
+            enum:
+              - A_VENIR
+              - EN_COURS
+              - TERMINEE
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageSalariesDto'
+      security:
+        - jwt: []
+      summary: Salariés en formation et avancement synthétique (écran 21b, US-26)
+      tags:
+        - Reporting et tableaux de bord
+  /api/v1/inscriptions/{id}/satisfaction:
+    post:
+      description: Inscription terminée, une réponse ; consentement explicite recueilli si besoin.
+      operationId: ReportingController_satisfaction
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReponseSatisfactionDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SatisfactionEnregistreeDto'
+      security:
+        - jwt: []
+      summary: Réponse au questionnaire de satisfaction (RG-DASH-04)
+      tags:
+        - Reporting et tableaux de bord
 info:
   title: FORMACTIV — API REST
   description: >-
@@ -2986,3 +3156,448 @@ components:
         - apprenant
         - etapes
         - competences
+    SatisfactionDto:
+      type: object
+      properties:
+        moyenne:
+          type: object
+          nullable: true
+          example: 4.2
+        reponses:
+          type: number
+          example: 128
+      required:
+        - reponses
+    AgregatDto:
+      type: object
+      properties:
+        inscriptions:
+          type: number
+        apprenants:
+          type: number
+        validees:
+          type: number
+        terminees:
+          type: number
+        certificats:
+          type: number
+          description: Certificats obtenus (RG-CERT-01)
+        tauxCompletion:
+          type: object
+          nullable: true
+          description: Ratio 0..1
+        tauxReussite:
+          type: object
+          nullable: true
+          description: Ratio 0..1
+        satisfaction:
+          $ref: '#/components/schemas/SatisfactionDto'
+      required:
+        - inscriptions
+        - apprenants
+        - validees
+        - terminees
+        - certificats
+        - satisfaction
+    ComparaisonDto:
+      type: object
+      properties:
+        periode:
+          type: object
+        tauxReussitePoints:
+          type: object
+          nullable: true
+          description: Écart en points
+        tauxCompletionPoints:
+          type: object
+          nullable: true
+          description: Écart en points
+        inscriptionsPourcent:
+          type: object
+          nullable: true
+          description: Variation en %
+      required:
+        - periode
+    MoisDto:
+      type: object
+      properties:
+        mois:
+          type: string
+          example: 2026-09
+        inscriptions:
+          type: number
+          description: Inscriptions validées ou terminées
+        apprenants:
+          type: number
+      required:
+        - mois
+        - inscriptions
+        - apprenants
+    TrimestreDto:
+      type: object
+      properties:
+        trimestre:
+          type: string
+          example: 2026-T3
+        inscriptions:
+          type: number
+          description: Inscriptions validées ou terminées
+        apprenants:
+          type: number
+          description: Apprenants distincts
+        previsionnel:
+          type: boolean
+          description: Trimestre non commencé (sessions planifiées)
+      required:
+        - trimestre
+        - inscriptions
+        - apprenants
+        - previsionnel
+    FormationIndicateursDto:
+      type: object
+      properties:
+        inscriptions:
+          type: number
+        apprenants:
+          type: number
+        validees:
+          type: number
+        terminees:
+          type: number
+        certificats:
+          type: number
+          description: Certificats obtenus (RG-CERT-01)
+        tauxCompletion:
+          type: object
+          nullable: true
+          description: Ratio 0..1
+        tauxReussite:
+          type: object
+          nullable: true
+          description: Ratio 0..1
+        satisfaction:
+          $ref: '#/components/schemas/SatisfactionDto'
+        formation:
+          type: object
+        part:
+          type: object
+          nullable: true
+          description: Part des inscriptions de la période
+      required:
+        - inscriptions
+        - apprenants
+        - validees
+        - terminees
+        - certificats
+        - satisfaction
+        - formation
+    IndicateursDto:
+      type: object
+      properties:
+        periode:
+          type: object
+        indicateurs:
+          $ref: '#/components/schemas/AgregatDto'
+        comparaison:
+          $ref: '#/components/schemas/ComparaisonDto'
+        parMois:
+          type: array
+          items:
+            $ref: '#/components/schemas/MoisDto'
+        parTrimestre:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrimestreDto'
+        parFormation:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormationIndicateursDto'
+      required:
+        - periode
+        - indicateurs
+        - comparaison
+        - parMois
+        - parTrimestre
+        - parFormation
+    ActionRecenteDto:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          format: date-time
+          type: string
+        auteur:
+          type: object
+          nullable: true
+        action:
+          type: string
+        typeObjet:
+          type: object
+          nullable: true
+        details:
+          type: object
+          nullable: true
+      required:
+        - id
+        - date
+        - action
+    TableauAdministrationDto:
+      type: object
+      properties:
+        comptesActifs:
+          type: number
+        connexions:
+          type: object
+        demandesRgpd:
+          type: object
+        comptesVerrouilles:
+          type: number
+        dernieresActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionRecenteDto'
+      required:
+        - comptesActifs
+        - connexions
+        - demandesRgpd
+        - comptesVerrouilles
+        - dernieresActions
+    SessionFormateurDto:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        intitule:
+          type: string
+        dateDebut:
+          type: string
+        dateFin:
+          type: string
+        apprenants:
+          type: number
+        partValidee:
+          type: object
+          nullable: true
+          description: Part des compétences validées (0..1)
+      required:
+        - sessionId
+        - intitule
+        - dateDebut
+        - dateFin
+        - apprenants
+    TableauFormateurDto:
+      type: object
+      properties:
+        sessionsAVenir:
+          type: number
+        apprenantsSuivis:
+          type: number
+        acquisitionMoyenne:
+          type: object
+          nullable: true
+          description: Sur les sessions terminées (0..1)
+        parSession:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionFormateurDto'
+      required:
+        - sessionsAVenir
+        - apprenantsSuivis
+        - parSession
+    ProgressionFormationDto:
+      type: object
+      properties:
+        inscriptionId:
+          type: string
+        formation:
+          type: string
+        statut:
+          type: string
+          enum:
+            - EN_ATTENTE
+            - VALIDEE
+            - ANNULEE
+            - TERMINEE
+        etat:
+          type: string
+          enum:
+            - A_VENIR
+            - EN_COURS
+            - TERMINEE
+        competencesAcquises:
+          type: number
+        competencesVisees:
+          type: number
+        document:
+          type: string
+          enum:
+            - ATTESTATION
+            - CERTIFICAT
+          nullable: true
+      required:
+        - inscriptionId
+        - formation
+        - statut
+        - etat
+        - competencesAcquises
+        - competencesVisees
+    ProchaineSessionDto:
+      type: object
+      properties:
+        inscriptionId:
+          type: string
+        formation:
+          type: string
+        dateDebut:
+          type: string
+        dateFin:
+          type: string
+        modalite:
+          type: string
+          enum:
+            - PRESENTIEL
+            - DISTANCIEL
+            - HYBRIDE
+        lieu:
+          type: object
+          nullable: true
+      required:
+        - inscriptionId
+        - formation
+        - dateDebut
+        - dateFin
+        - modalite
+    TableauApprenantDto:
+      type: object
+      properties:
+        formationsSuivies:
+          type: number
+        competences:
+          type: object
+        documents:
+          type: object
+        progression:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgressionFormationDto'
+        prochainesSessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProchaineSessionDto'
+        satisfactionAttendue:
+          description: Inscriptions terminées sans réponse (RG-DASH-04)
+          type: array
+          items:
+            type: string
+        consentementSatisfaction:
+          type: boolean
+          description: Consentement « questionnaires de satisfaction » actif
+      required:
+        - formationsSuivies
+        - competences
+        - documents
+        - progression
+        - prochainesSessions
+        - satisfactionAttendue
+        - consentementSatisfaction
+    LigneSalarieDto:
+      type: object
+      properties:
+        inscriptionId:
+          type: string
+        apprenant:
+          type: object
+        formation:
+          type: object
+        session:
+          type: object
+        statut:
+          type: string
+          enum:
+            - EN_ATTENTE
+            - VALIDEE
+            - ANNULEE
+            - TERMINEE
+        etat:
+          type: string
+          enum:
+            - A_VENIR
+            - EN_COURS
+            - TERMINEE
+        competencesAcquises:
+          type: number
+        competencesVisees:
+          type: number
+        documents:
+          type: array
+          items:
+            type: string
+            enum:
+              - ATTESTATION
+              - CERTIFICAT
+      required:
+        - inscriptionId
+        - apprenant
+        - formation
+        - session
+        - statut
+        - etat
+        - competencesAcquises
+        - competencesVisees
+        - documents
+    PageSalariesDto:
+      type: object
+      properties:
+        donnees:
+          type: array
+          items:
+            $ref: '#/components/schemas/LigneSalarieDto'
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+        salaries:
+          type: number
+          description: Salariés distincts correspondant aux filtres
+      required:
+        - donnees
+        - total
+        - page
+        - limit
+        - salaries
+    ReponseSatisfactionDto:
+      type: object
+      properties:
+        score:
+          type: number
+          minimum: 1
+          maximum: 5
+          example: 4
+        commentaire:
+          type: string
+          maxLength: 1000
+        consentement:
+          type: boolean
+          description: >-
+            Consentement explicite à la finalité « questionnaires de satisfaction » (RG-RGPD-01), requis s’il n’a pas
+            déjà été donné
+      required:
+        - score
+        - consentement
+    SatisfactionEnregistreeDto:
+      type: object
+      properties:
+        id:
+          type: string
+        score:
+          type: number
+        dateReponse:
+          format: date-time
+          type: string
+      required:
+        - id
+        - score
+        - dateReponse

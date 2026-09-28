@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsUUID, Matches } from 'class-validator';
-import { DATE_ISO, MESSAGE_DATE } from '../../../common/utils/dates';
+import { IsIn, IsOptional, IsUUID } from 'class-validator';
+import { EstDateIso } from '../../../common/decorators/date-iso.decorator';
 
 export const JEUX_EXPORT = ['inscriptions', 'resultats', 'evaluations'] as const;
 export type JeuExport = (typeof JEUX_EXPORT)[number];
@@ -43,11 +43,11 @@ export class ExportQueryDto {
 
   @ApiPropertyOptional({ example: '2026-01-01', description: 'Sessions se terminant à partir de' })
   @IsOptional()
-  @Matches(DATE_ISO, { message: MESSAGE_DATE })
+  @EstDateIso()
   du?: string;
 
   @ApiPropertyOptional({ example: '2026-12-31', description: 'Sessions commençant jusqu’au' })
   @IsOptional()
-  @Matches(DATE_ISO, { message: MESSAGE_DATE })
+  @EstDateIso()
   au?: string;
 }
