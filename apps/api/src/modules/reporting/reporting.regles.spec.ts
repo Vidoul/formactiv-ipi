@@ -3,10 +3,13 @@ import {
   agreger,
   anneeCivile,
   certificatObtenu,
+  debutTrimestre,
   ecartPoints,
   moisDeLaPeriode,
   periodePrecedente,
   ratio,
+  trimestreDe,
+  trimestresDeLaPeriode,
   variation,
   type LigneIndicateur,
 } from './reporting.regles';
@@ -17,6 +20,7 @@ const ligne = (surcharges: Partial<LigneIndicateur>): LigneIndicateur => ({
   formationId: 'f1',
   intitule: 'Cybersécurité',
   dateDebut: '2026-09-14',
+  sessionEchue: true,
   competencesVisees: 3,
   competencesAcquises: 3,
   score: null,
@@ -32,11 +36,13 @@ describe('Indicateurs RG-DASH-01', () => {
       ligne({ apprenantId: 'a4', statut: StatutInscription.EN_ATTENTE }),
       ligne({ apprenantId: 'a5', statut: StatutInscription.ANNULEE, score: 1 }),
       ligne({ apprenantId: 'a1', formationId: 'f2', statut: StatutInscription.VALIDEE }),
+      // Session à venir : comptée dans les inscriptions, pas dans la complétion.
+      ligne({ apprenantId: 'a6', statut: StatutInscription.VALIDEE, sessionEchue: false }),
     ]);
     expect(a).toEqual({
-      inscriptions: 5,
-      apprenants: 4,
-      validees: 4,
+      inscriptions: 6,
+      apprenants: 5,
+      validees: 5,
       terminees: 2,
       certificats: 1,
       tauxCompletion: 0.5,
@@ -84,6 +90,18 @@ describe('Périodes et comparaisons (RG-DASH-03)', () => {
       '2027-02',
     ]);
     expect(moisDeLaPeriode(anneeCivile('2026-09-28'))).toHaveLength(12);
+  });
+
+  it('découpe la période en trimestres', () => {
+    expect(trimestreDe('2026-09-30')).toBe('2026-T3');
+    expect(trimestreDe('2026-10-01')).toBe('2026-T4');
+    expect(debutTrimestre('2026-T4')).toBe('2026-10-01');
+    expect(trimestresDeLaPeriode(anneeCivile('2026-05-02'))).toEqual([
+      '2026-T1',
+      '2026-T2',
+      '2026-T3',
+      '2026-T4',
+    ]);
   });
 
   it('exprime les variations en pourcentage et en points', () => {

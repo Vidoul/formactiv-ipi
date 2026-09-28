@@ -34,10 +34,13 @@ import type {
 import {
   agreger,
   anneeCivile,
+  debutTrimestre,
   ecartPoints,
   moisDeLaPeriode,
   periodePrecedente,
   ratio,
+  trimestreDe,
+  trimestresDeLaPeriode,
   variation,
   type LigneIndicateur,
   type Periode,
@@ -61,6 +64,7 @@ const SELECTION_LIGNE = {
   session: {
     select: {
       dateDebut: true,
+      dateFin: true,
       formation: {
         select: { id: true, intitule: true, competences: { select: { competenceId: true } } },
       },
@@ -70,7 +74,7 @@ const SELECTION_LIGNE = {
 
 type InscriptionIndicateur = Prisma.InscriptionGetPayload<{ select: typeof SELECTION_LIGNE }>;
 
-function versLigne(i: InscriptionIndicateur): LigneIndicateur {
+function versLigne(i: InscriptionIndicateur, jour: string): LigneIndicateur {
   const visees = new Set(i.session.formation.competences.map((c) => c.competenceId));
   return {
     apprenantId: i.apprenantId,
@@ -78,6 +82,7 @@ function versLigne(i: InscriptionIndicateur): LigneIndicateur {
     formationId: i.session.formation.id,
     intitule: i.session.formation.intitule,
     dateDebut: versIso(i.session.dateDebut),
+    sessionEchue: versIso(i.session.dateFin) < jour,
     competencesVisees: visees.size,
     competencesAcquises: i.evaluations.filter((e) => visees.has(e.competenceId)).length,
     score: i.reponseSatisfaction?.score ?? null,
@@ -150,7 +155,8 @@ export class ReportingService {
       },
       select: SELECTION_LIGNE,
     });
-    return inscriptions.map(versLigne);
+    const jour = aujourdhui();
+    return inscriptions.map((i) => versLigne(i, jour));
   }
 
   async indicateurs(
@@ -190,6 +196,19 @@ export class ReportingService {
           mois,
           inscriptions: duMois.length,
           apprenants: new Set(duMois.map((l) => l.apprenantId)).size,
+        };
+      }),
+      parTrimestre: trimestresDeLaPeriode(periode).map((t) => {
+        const duTrimestre = courantes.filter(
+          (l) =>
+            trimestreDe(l.dateDebut) === t &&
+            (l.statut === StatutInscription.VALIDEE || l.statut === StatutInscription.TERMINEE),
+        );
+        return {
+          trimestre: t,
+          inscriptions: duTrimestre.length,
+          apprenants: new Set(duTrimestre.map((l) => l.apprenantId)).size,
+          previsionnel: debutTrimestre(t) > aujourdhui(),
         };
       }),
       parFormation: [...formations.values()]

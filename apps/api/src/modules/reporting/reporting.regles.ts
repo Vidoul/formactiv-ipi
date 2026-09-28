@@ -8,8 +8,9 @@ import { ajouterJours, depuisIso } from '../../common/utils/dates';
  * définir) :
  * - taux de réussite = certificats obtenus ÷ inscriptions terminées, un certificat étant obtenu
  *   lorsque toutes les compétences visées sont acquises (conditions RG-CERT-01) ;
- * - taux de complétion = inscriptions terminées ÷ inscriptions validées (une inscription terminée
- *   a nécessairement été validée : elle compte au dénominateur) ;
+ * - taux de complétion = inscriptions terminées ÷ inscriptions validées, sur les sessions échues
+ *   (une inscription terminée a nécessairement été validée ; une inscription à une session à venir
+ *   ne peut pas encore être terminée et ne pèse pas sur le taux) ;
  * - satisfaction = moyenne des réponses aux questionnaires (1 à 5, RG-DASH-04).
  */
 
@@ -20,6 +21,8 @@ export interface LigneIndicateur {
   intitule: string;
   /** Début de la session, « AAAA-MM-JJ » : rattache l'inscription à une période. */
   dateDebut: string;
+  /** La session est terminée (date de fin passée) : l'inscription pouvait être complétée. */
+  sessionEchue: boolean;
   competencesVisees: number;
   competencesAcquises: number;
   /** Score de satisfaction (1..5) ou null sans réponse. */
@@ -59,16 +62,20 @@ export function agreger(lignes: LigneIndicateur[]): Agregat {
   const terminees = lignes.filter((l) => l.statut === StatutInscription.TERMINEE);
   const validees = lignes.filter(
     (l) => l.statut === StatutInscription.VALIDEE || l.statut === StatutInscription.TERMINEE,
-  ).length;
+  );
+  const echues = validees.filter((l) => l.sessionEchue);
   const certificats = terminees.filter(certificatObtenu).length;
   const scores = lignes.flatMap((l) => (l.score === null ? [] : [l.score]));
   return {
     inscriptions: actives.length,
     apprenants: new Set(actives.map((l) => l.apprenantId)).size,
-    validees,
+    validees: validees.length,
     terminees: terminees.length,
     certificats,
-    tauxCompletion: ratio(terminees.length, validees),
+    tauxCompletion: ratio(
+      echues.filter((l) => l.statut === StatutInscription.TERMINEE).length,
+      echues.length,
+    ),
     tauxReussite: ratio(certificats, terminees.length),
     satisfaction: {
       moyenne:
@@ -107,6 +114,22 @@ export function moisDeLaPeriode(p: Periode): string[] {
     if (mois.length > 36) break;
   }
   return mois;
+}
+
+/** Trimestre « 2026-T3 » d'une date « AAAA-MM-JJ ». */
+export function trimestreDe(date: string): string {
+  return `${date.slice(0, 4)}-T${Math.floor((Number(date.slice(5, 7)) - 1) / 3) + 1}`;
+}
+
+/** Premier jour d'un trimestre « 2026-T3 » → « 2026-07-01 ». */
+export function debutTrimestre(trimestre: string): string {
+  const mois = (Number(trimestre.slice(6)) - 1) * 3 + 1;
+  return `${trimestre.slice(0, 4)}-${String(mois).padStart(2, '0')}-01`;
+}
+
+/** Trimestres couverts par la période, dans l'ordre. */
+export function trimestresDeLaPeriode(p: Periode): string[] {
+  return [...new Set(moisDeLaPeriode(p).map((m) => trimestreDe(`${m}-01`)))];
 }
 
 /** Variation relative en pourcentage entier (null si la base est nulle). */

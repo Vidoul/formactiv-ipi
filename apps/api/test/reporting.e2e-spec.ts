@@ -125,7 +125,7 @@ describe('Tableaux de bord et reporting (UC-12, RG-DASH-01..04)', () => {
       validees: 3,
       terminees: 2,
       certificats: 1,
-      tauxCompletion: 0.667,
+      tauxCompletion: 1,
       tauxReussite: 0.5,
       satisfaction: { moyenne: 5, reponses: 1 },
     });
@@ -137,6 +137,12 @@ describe('Tableaux de bord et reporting (UC-12, RG-DASH-01..04)', () => {
       r.body.parFormation.map((f: { formation: { intitule: string } }) => f.formation.intitule),
     ).toEqual(['Cybersécurité fondamentaux', 'RGPD en pratique']);
     expect(r.body.parFormation[0]).toMatchObject({ inscriptions: 2, tauxReussite: 0.5, part: 0.5 });
+    expect(r.body.parTrimestre.length).toBeGreaterThanOrEqual(1);
+    const inscritsTrimestres = r.body.parTrimestre.reduce(
+      (n: number, t: { inscriptions: number }) => n + t.inscriptions,
+      0,
+    );
+    expect(inscritsTrimestres).toBe(3);
     const moisCyber = ajouterJours(J, -40).slice(0, 7);
     expect(r.body.parMois).toContainEqual({
       mois: moisCyber,

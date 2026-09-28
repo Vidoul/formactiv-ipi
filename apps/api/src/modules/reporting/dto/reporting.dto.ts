@@ -123,6 +123,14 @@ class MoisDto {
   @ApiProperty() apprenants!: number;
 }
 
+class TrimestreDto {
+  @ApiProperty({ example: '2026-T3' }) trimestre!: string;
+  @ApiProperty({ description: 'Inscriptions validées ou terminées' }) inscriptions!: number;
+  @ApiProperty({ description: 'Apprenants distincts' }) apprenants!: number;
+  @ApiProperty({ description: 'Trimestre non commencé (sessions planifiées)' })
+  previsionnel!: boolean;
+}
+
 class FormationIndicateursDto extends AgregatDto {
   @ApiProperty() formation!: { id: string; intitule: string };
   @ApiPropertyOptional({ nullable: true, description: 'Part des inscriptions de la période' })
@@ -134,6 +142,7 @@ export class IndicateursDto {
   @ApiProperty({ type: AgregatDto }) indicateurs!: AgregatDto;
   @ApiProperty({ type: ComparaisonDto }) comparaison!: ComparaisonDto;
   @ApiProperty({ type: [MoisDto] }) parMois!: MoisDto[];
+  @ApiProperty({ type: [TrimestreDto] }) parTrimestre!: TrimestreDto[];
   @ApiProperty({ type: [FormationIndicateursDto] }) parFormation!: FormationIndicateursDto[];
 }
 
