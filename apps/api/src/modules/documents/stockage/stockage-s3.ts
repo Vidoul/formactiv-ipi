@@ -1,10 +1,11 @@
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { verifierCle, type Stockage } from './stockage';
+import { verifierCle, type ObjetStocke, type Stockage } from './stockage';
 
 export interface ConfigurationS3 {
   endpoint?: string;
@@ -54,5 +55,24 @@ export class StockageS3 implements Stockage {
   async supprimer(cle: string): Promise<void> {
     verifierCle(cle);
     await this.client.send(new DeleteObjectCommand({ Bucket: this.config.bucket, Key: cle }));
+  }
+
+  async lister(prefixe: string): Promise<ObjetStocke[]> {
+    const objets: ObjetStocke[] = [];
+    let suite: string | undefined;
+    do {
+      const page = await this.client.send(
+        new ListObjectsV2Command({
+          Bucket: this.config.bucket,
+          Prefix: prefixe,
+          ContinuationToken: suite,
+        }),
+      );
+      for (const o of page.Contents ?? []) {
+        if (o.Key) objets.push({ cle: o.Key, modifieLe: o.LastModified ?? new Date(0) });
+      }
+      suite = page.IsTruncated ? page.NextContinuationToken : undefined;
+    } while (suite);
+    return objets;
   }
 }

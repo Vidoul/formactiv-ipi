@@ -64,6 +64,12 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
   satisfaction avec consentement explicite (RG-DASH-04, RG-RGPD-01) ; écrans Figma 05
   (administration), 09 (pilotage), 17 (formateur), 18 (apprenant), 21a et 21b (client
   entreprise). Les définitions des indicateurs restent à valider avec FORMACTIV.
+- **Lot 7 — RGPD et journal d'audit (US-28..31, UC-13/14/15)** : droit d'accès et portabilité
+  (export JSON), rectification en libre-service, consentements donnés ou retirés avec preuve
+  conservée (RG-RGPD-01), demandes numérotées et file de traitement de l'administrateur, effacement
+  du compte à la clôture d'une suppression (RG-CPT-02), consultation filtrée du journal
+  (RG-LOG-01), politique de conservation appliquée par une purge mensuelle journalisée
+  (RG-RGPD-04, durées paramétrables à valider) ; écrans Figma 04, 07 et 08.
 
 ### Corrigé
 
