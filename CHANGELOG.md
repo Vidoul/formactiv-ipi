@@ -58,8 +58,17 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
   exports CSV (tableur francophone, injection de formules neutralisée) et PDF limités à la portée
   du rôle (RG-EXP-01) et journalisés ; écrans Figma 14 (génération), 19 (Mon parcours),
   20 (Mes documents) et page Exports (responsable, client entreprise). ADR-05 et ADR-07.
+- **Lot 6 — Tableaux de bord et reporting (US-23..27, UC-12)** : indicateurs RG-DASH-01 (réussite,
+  complétion sur les sessions échues, satisfaction) comparés à la période précédente, portée par
+  rôle (RG-DASH-02) et filtres période / formation / entreprise (RG-DASH-03) ; questionnaire de
+  satisfaction avec consentement explicite (RG-DASH-04, RG-RGPD-01) ; écrans Figma 05
+  (administration), 09 (pilotage), 17 (formateur), 18 (apprenant), 21a et 21b (client
+  entreprise). Les définitions des indicateurs restent à valider avec FORMACTIV.
 
 ### Corrigé
+
+- Validation des dates : « 2026-02-30 » était accepté puis décalé au 2 mars ; les dates sont
+  désormais contrôlées au calendrier (sessions, exports, indicateurs).
 
 - Export OpenAPI : le script est compilé par `tsc` (métadonnées de décorateurs) ; la
   spécification `docs/api/formactiv-openapi.yaml` couvre désormais toutes les routes.
