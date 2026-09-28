@@ -37,6 +37,10 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
   avec fermeture des sessions, déverrouillage et réinitialisation MFA, suppression ou
   anonymisation selon l'historique (RG-CPT-02), entreprises clientes (SIRET contrôlé),
   paramètres plateforme administrables ; écrans Utilisateurs (Figma 06), Entreprises, Paramètres.
+- **Lot 2 — Catalogue et compétences (US-06..09, UC-04)** : formations au cycle brouillon /
+  publiée / archivée (RG-FORM-03), publication subordonnée aux compétences visées (RG-FORM-02),
+  catalogue publié seul visible des apprenants et clients, seuil d'acquisition verrouillé après
+  les premières notes, référentiels RNCP / interne (RG-COMP-01) ; écrans Figma 10 et 11.
 
 ### Sécurité
 

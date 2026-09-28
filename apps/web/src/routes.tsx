@@ -58,7 +58,17 @@ export const routes: RouteObject[] = [
               },
             ],
           ),
-          reserveA(['RESP_FORMATION'], [{ path: '/pilotage', ...accueil }]),
+          reserveA(
+            ['RESP_FORMATION'],
+            [
+              { path: '/pilotage', ...accueil },
+              { path: '/formations', ...page(() => import('./features/catalogue/PageFormations')) },
+              {
+                path: '/competences',
+                ...page(() => import('./features/catalogue/PageCompetences')),
+              },
+            ],
+          ),
           reserveA(['FORMATEUR'], [{ path: '/formateur/sessions', ...accueil }]),
           reserveA(['APPRENANT'], [{ path: '/mon-espace', ...accueil }]),
           reserveA(['CLIENT_ENTREPRISE'], [{ path: '/entreprise/tableau-de-bord', ...accueil }]),
