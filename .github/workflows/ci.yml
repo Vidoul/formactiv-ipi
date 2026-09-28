@@ -1,0 +1,154 @@
+# Intégration continue FORMACTIV (Definition of Done, chapitre 13) : chaque poussée et chaque
+# demande de fusion vérifie la qualité, les tests à tous les niveaux, la sécurité des
+# dépendances et la construction des images.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HUSKY: '0'
+
+jobs:
+  qualite:
+    name: Qualité et tests unitaires
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run prisma:generate -w apps/api
+      - name: Formatage (Prettier)
+        run: npm run format:check
+      - name: Analyse statique (ESLint)
+        run: npm run lint
+      - name: Vérification des types (TypeScript)
+        run: npm run typecheck
+      - name: Tests unitaires de l'API (Jest, couverture)
+        run: npm run test:cov -w apps/api
+      - name: Tests du front (Vitest)
+        run: npm run test -w apps/web
+      - name: Construction
+        run: npm run build -w apps/api && npm run build -w apps/web
+
+  integration:
+    name: Tests d'intégration de l'API (PostgreSQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: formactiv
+          POSTGRES_PASSWORD: formactiv
+          POSTGRES_DB: formactiv_test
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U formactiv -d formactiv_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL_TEST: postgresql://formactiv:formactiv@localhost:5433/formactiv_test?schema=public
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run prisma:generate -w apps/api
+      - name: Tests d'intégration (Supertest, base réelle)
+        run: npm run test:e2e:api
+
+  bout-en-bout:
+    name: Tests de bout en bout et accessibilité (Playwright, axe)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: formactiv
+          POSTGRES_PASSWORD: formactiv
+          POSTGRES_DB: formactiv_e2e
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U formactiv -d formactiv_e2e"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL_E2E: postgresql://formactiv:formactiv@localhost:5433/formactiv_e2e?schema=public
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run prisma:generate -w apps/api
+      - name: Navigateur Chromium
+        run: npx -w e2e playwright install --with-deps chromium
+      - name: Parcours et audit d'accessibilité
+        run: npm run test:e2e
+      - name: Rapport Playwright
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-playwright
+          path: e2e/playwright-report
+          retention-days: 14
+
+  securite:
+    name: Audit des dépendances
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Vulnérabilités connues (npm audit, OWASP A06)
+        run: npm audit --audit-level=high
+
+  images:
+    name: Images Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - name: Image de l'API
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: false
+          tags: formactiv-api:ci
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Image du front
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: false
+          tags: formactiv-web:ci
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+      - name: Composition de production
+        run: |
+          cp .env.production.example .env.production
+          docker compose -f docker-compose.prod.yml --env-file .env.production config --quiet
