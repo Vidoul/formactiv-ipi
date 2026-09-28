@@ -64,14 +64,25 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
   satisfaction avec consentement explicite (RG-DASH-04, RG-RGPD-01) ; écrans Figma 05
   (administration), 09 (pilotage), 17 (formateur), 18 (apprenant), 21a et 21b (client
   entreprise). Les définitions des indicateurs restent à valider avec FORMACTIV.
-- **Lot 7 — RGPD et journal d'audit (US-28..31, UC-13/14/15)** : droit d'accès et portabilité
+- **Lot 7 — RGPD et journal d'audit (US-28..32, UC-13/14/15)** : droit d'accès et portabilité
   (export JSON), rectification en libre-service, consentements donnés ou retirés avec preuve
   conservée (RG-RGPD-01), demandes numérotées et file de traitement de l'administrateur, effacement
   du compte à la clôture d'une suppression (RG-CPT-02), consultation filtrée du journal
   (RG-LOG-01), politique de conservation appliquée par une purge mensuelle journalisée
   (RG-RGPD-04, durées paramétrables à valider) ; écrans Figma 04, 07 et 08.
+- **Industrialisation** : tests de bout en bout Playwright (parcours métier complet avec MFA
+  réelle) et audit d'accessibilité axe de 34 écrans en bureau et mobile ; images Docker de
+  production (API, front Nginx durci) et `docker-compose.prod.yml` ; intégration continue GitHub
+  Actions (qualité, intégration, bout en bout, audit des dépendances, images), CodeQL et
+  Dependabot ; documentation complète (architecture C4, ADR-01 à 07, API, sécurité, RGPD,
+  accessibilité, tests, traçabilité, exploitation, guide utilisateur).
 
 ### Corrigé
+
+- Accessibilité : les tableaux qui défilent horizontalement sur petit écran sont désormais
+  atteignables au clavier (relevé par l'audit axe en affichage mobile).
+- Traçabilité : numéros de user stories alignés sur le dossier (US-24 client, US-26 apprenant,
+  US-29 droit d'accès, US-32 journal).
 
 - Validation des dates : « 2026-02-30 » était accepté puis décalé au 2 mars ; les dates sont
   désormais contrôlées au calendrier (sessions, exports, indicateurs).
