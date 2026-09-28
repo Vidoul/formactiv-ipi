@@ -17,10 +17,8 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/dto/pagination.dto';
+import { DATE_ISO, MESSAGE_DATE } from '../../../common/utils/dates';
 import { Nettoyer } from '../../../common/utils/transformations';
-
-const DATE_ISO = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
-const MESSAGE_DATE = 'Date attendue au format AAAA-MM-JJ.';
 
 export class ListeSessionsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ format: 'uuid' })

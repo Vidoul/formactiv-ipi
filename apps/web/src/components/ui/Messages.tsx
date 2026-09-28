@@ -24,15 +24,18 @@ export function Alerte({
   );
 }
 
+/** Message lisible d'une erreur d'API (ou message générique). */
+export function messageErreur(erreur: unknown): string {
+  return erreur instanceof ErreurApi
+    ? erreur.message
+    : 'Une erreur inattendue est survenue. Veuillez réessayer.';
+}
+
 /** Affiche le message d'une erreur d'API (ou un message générique). */
 export function AlerteErreur({ erreur }: { erreur: unknown }) {
-  const message =
-    erreur instanceof ErreurApi
-      ? erreur.message
-      : 'Une erreur inattendue est survenue. Veuillez réessayer.';
   return (
     <Alerte type="erreur">
-      <p>{message}</p>
+      <p>{messageErreur(erreur)}</p>
     </Alerte>
   );
 }

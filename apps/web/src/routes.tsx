@@ -12,6 +12,8 @@ function page(chargeur: () => Promise<{ default: ComponentType }>): Pick<RouteOb
 }
 
 const accueil = page(() => import('./pages/PageAccueil'));
+const parcours = page(() => import('./features/documents/PageParcours'));
+const pageExports = page(() => import('./features/documents/PageExports'));
 
 /** Groupe de routes réservé à certains rôles (matrice RBAC, chapitre 5). */
 function reserveA(roles: CodeRole[], enfants: RouteObject[]): RouteObject {
@@ -80,7 +82,17 @@ export const routes: RouteObject[] = [
                 path: '/inscriptions',
                 ...page(() => import('./features/sessions/PageInscriptions')),
               },
+              {
+                path: '/documents',
+                ...page(() => import('./features/documents/PageDocumentsSession')),
+              },
+              { path: '/exports', ...pageExports },
             ],
+          ),
+          // Parcours d'un apprenant consulté par l'administration (RG-HIST-01)
+          reserveA(
+            ['ADMIN', 'RESP_FORMATION'],
+            [{ path: '/apprenants/:id/parcours', ...parcours }],
           ),
           reserveA(
             ['FORMATEUR'],
@@ -96,8 +108,24 @@ export const routes: RouteObject[] = [
               { path: '/formateur/tableau-de-bord', ...accueil },
             ],
           ),
-          reserveA(['APPRENANT'], [{ path: '/mon-espace', ...accueil }]),
-          reserveA(['CLIENT_ENTREPRISE'], [{ path: '/entreprise/tableau-de-bord', ...accueil }]),
+          reserveA(
+            ['APPRENANT'],
+            [
+              { path: '/mon-espace', ...accueil },
+              { path: '/mon-parcours', ...parcours },
+              {
+                path: '/mes-documents',
+                ...page(() => import('./features/documents/PageMesDocuments')),
+              },
+            ],
+          ),
+          reserveA(
+            ['CLIENT_ENTREPRISE'],
+            [
+              { path: '/entreprise/tableau-de-bord', ...accueil },
+              { path: '/entreprise/exports', ...pageExports },
+            ],
+          ),
         ],
       },
     ],

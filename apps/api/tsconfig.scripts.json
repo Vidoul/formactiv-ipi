@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./.scripts-build",
+    "incremental": false,
+    "sourceMap": false
+  },
+  "include": ["scripts/**/*", "src/**/*", "test/setup-env.ts"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts"]
+}

@@ -50,8 +50,23 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
   (RG-EVAL-01), acquisition au seuil de la formation (RG-EVAL-02), corrections journalisées avec
   l'ancienne valeur, feuille de session groupée, synthèse sans note pour le client entreprise ;
   écran Figma 16.
+- **Lot 5 — Documents, parcours et exports (US-19..22, UC-09/10/11)** : attestations et
+  certificats PDF balisés (RG-CERT-01, référence unique `C-/A-AAAA-NNNN`, émetteur et date,
+  RG-CERT-02), stockage objet local ou S3 avec empreinte SHA-256 vérifiée à chaque remise,
+  téléchargement par URL signée de courte durée revérifiant la portée RBAC (ADR-05),
+  anonymisation des PDF nominatifs (RG-CPT-02), historique complet du parcours (RG-HIST-01),
+  exports CSV (tableur francophone, injection de formules neutralisée) et PDF limités à la portée
+  du rôle (RG-EXP-01) et journalisés ; écrans Figma 14 (génération), 19 (Mon parcours),
+  20 (Mes documents) et page Exports (responsable, client entreprise). ADR-05 et ADR-07.
+
+### Corrigé
+
+- Export OpenAPI : le script est compilé par `tsc` (métadonnées de décorateurs) ; la
+  spécification `docs/api/formactiv-openapi.yaml` couvre désormais toutes les routes.
 
 ### Sécurité
 
+- Les erreurs serveur ne journalisent plus les paramètres d'URL (liens signés, jetons) : seul le
+  chemin est conservé dans les logs et dans le corps d'erreur.
 - Dépendances auditées : surcharge de `deepmerge-ts` (dépendance du CLI Prisma) vers la version
   corrigée ; Nodemailer 10 et js-yaml 4.3.2 retenus pour corriger des vulnérabilités connues.
