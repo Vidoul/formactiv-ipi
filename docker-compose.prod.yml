@@ -1,0 +1,98 @@
+# Déploiement de PRODUCTION de référence (chapitre 12 du dossier de conception).
+#
+#   cp .env.production.example .env.production   # puis renseigner TOUS les secrets
+#   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+#
+# - postgres  : base sur un réseau interne, sans port exposé à l'hôte ;
+# - migration : applique les migrations puis crée l'administrateur initial (SEED_MODE=production),
+#               s'exécute à chaque déploiement et s'arrête ;
+# - api       : API NestJS, système de fichiers en lecture seule, utilisateur non privilégié ;
+# - web       : Nginx (front + relais /api), seul service exposé ; le TLS est terminé en amont
+#               par le reverse proxy de l'hébergeur.
+name: formactiv-prod
+
+x-api-env: &api-env
+  NODE_ENV: production
+  PORT: '3000'
+  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    networks: [interne]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migration:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: construction
+    working_dir: /app/apps/api
+    command: ['sh', '-c', 'npx prisma migrate deploy && npx prisma db seed']
+    env_file: .env.production
+    environment:
+      <<: *api-env
+      SEED_MODE: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [interne]
+    restart: 'no'
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: execution
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      <<: *api-env
+      TRUST_PROXY: 'true'
+      STORAGE_LOCAL_DIR: /app/apps/api/storage
+    volumes:
+      # Stockage local des PDF (STORAGE_DRIVER=local) ; en S3, ce volume reste inutilisé.
+      - documents:/app/apps/api/storage
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ['no-new-privileges:true']
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+    networks: [interne, public]
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    environment:
+      API_UPSTREAM: http://api:3000
+    ports:
+      - '${WEB_PORT:-8080}:8080'
+    security_opt: ['no-new-privileges:true']
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [public]
+
+networks:
+  # La base n'est joignable que par l'API et la tâche de migration.
+  interne:
+    internal: true
+  public:
+
+volumes:
+  pgdata:
+  documents:

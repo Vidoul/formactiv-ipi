@@ -1,0 +1,36 @@
+# Nginx du front FORMACTIV (production). TLS terminé en amont (reverse proxy de l'hébergeur).
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+    server_tokens off;
+    client_max_body_size 1m;
+
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+
+    # API servie sur la même origine que le front (cookie de refresh SameSite=Strict, sans
+    # CORS) ; ses en-têtes de sécurité sont posés par l'API elle-même (helmet).
+    location /api/ {
+        proxy_pass ${API_UPSTREAM};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Fichiers versionnés (empreinte dans le nom) : cache long (sobriété, chapitre 8).
+    location /assets/ {
+        include /etc/nginx/snippets/securite.conf;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    # Application monopage : toute route inconnue sert index.html, jamais mis en cache.
+    location / {
+        include /etc/nginx/snippets/securite.conf;
+        add_header Cache-Control "no-cache";
+        try_files $uri $uri/ /index.html;
+    }
+}
