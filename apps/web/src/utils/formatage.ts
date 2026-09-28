@@ -56,6 +56,12 @@ export function formaterNote(note: number | null | undefined): string {
   return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(note);
 }
 
+/** Satisfaction moyenne → « 4,2 / 5 » (« — » sans réponse, RG-DASH-04). */
+export function formaterSatisfaction(moyenne: number | null | undefined): string {
+  if (moyenne === null || moyenne === undefined) return '—';
+  return `${formaterNote(moyenne)} / 5`;
+}
+
 /** Ratio [0..1] → « 87 % ». */
 export function formaterPourcentage(ratio: number | null | undefined): string {
   if (ratio === null || ratio === undefined || Number.isNaN(ratio)) return '—';

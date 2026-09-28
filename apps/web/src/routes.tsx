@@ -11,7 +11,6 @@ function page(chargeur: () => Promise<{ default: ComponentType }>): Pick<RouteOb
   return { lazy: () => chargeur().then((m) => ({ Component: m.default })) };
 }
 
-const accueil = page(() => import('./pages/PageAccueil'));
 const parcours = page(() => import('./features/documents/PageParcours'));
 const pageExports = page(() => import('./features/documents/PageExports'));
 
@@ -45,7 +44,10 @@ export const routes: RouteObject[] = [
           reserveA(
             ['ADMIN'],
             [
-              { path: '/admin/tableau-de-bord', ...accueil },
+              {
+                path: '/admin/tableau-de-bord',
+                ...page(() => import('./features/tableaux-de-bord/PageTableauAdministration')),
+              },
               {
                 path: '/admin/utilisateurs',
                 ...page(() => import('./features/admin/PageUtilisateurs')),
@@ -63,7 +65,10 @@ export const routes: RouteObject[] = [
           reserveA(
             ['RESP_FORMATION'],
             [
-              { path: '/pilotage', ...accueil },
+              {
+                path: '/pilotage',
+                ...page(() => import('./features/tableaux-de-bord/PagePilotage')),
+              },
               { path: '/formations', ...page(() => import('./features/catalogue/PageFormations')) },
               {
                 path: '/competences',
@@ -105,13 +110,19 @@ export const routes: RouteObject[] = [
                 path: '/formateur/evaluations',
                 ...page(() => import('./features/formateur/PageEvaluations')),
               },
-              { path: '/formateur/tableau-de-bord', ...accueil },
+              {
+                path: '/formateur/tableau-de-bord',
+                ...page(() => import('./features/tableaux-de-bord/PageTableauFormateur')),
+              },
             ],
           ),
           reserveA(
             ['APPRENANT'],
             [
-              { path: '/mon-espace', ...accueil },
+              {
+                path: '/mon-espace',
+                ...page(() => import('./features/tableaux-de-bord/PageTableauApprenant')),
+              },
               { path: '/mon-parcours', ...parcours },
               {
                 path: '/mes-documents',
@@ -122,7 +133,14 @@ export const routes: RouteObject[] = [
           reserveA(
             ['CLIENT_ENTREPRISE'],
             [
-              { path: '/entreprise/tableau-de-bord', ...accueil },
+              {
+                path: '/entreprise/tableau-de-bord',
+                ...page(() => import('./features/tableaux-de-bord/PageTableauEntreprise')),
+              },
+              {
+                path: '/entreprise/salaries',
+                ...page(() => import('./features/tableaux-de-bord/PageSalaries')),
+              },
               { path: '/entreprise/exports', ...pageExports },
             ],
           ),

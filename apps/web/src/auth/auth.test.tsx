@@ -83,14 +83,18 @@ describe('Parcours de connexion (écran Figma 01, UC-01)', () => {
       code: '123456',
     });
     expect(sessionApi.obtenirJeton()).toBe('jeton-acces');
-    expect(await screen.findByRole('heading', { name: 'Bienvenue, Nadia' })).toBeInTheDocument();
+    // Tableau de bord du responsable formation (écran Figma 09).
+    expect(
+      await screen.findByRole('heading', { name: 'Pilotage des formations' }),
+    ).toBeInTheDocument();
   });
 
   it('restaure la session existante au chargement (cookie de refresh)', async () => {
     simulerApi({ 'POST /auth/refresh': [200, session({ role: 'APPRENANT', prenom: 'Léa' })] });
     const routeur = demarrer('/');
     await waitFor(() => expect(routeur.state.location.pathname).toBe('/mon-espace'));
-    expect(await screen.findByRole('heading', { name: 'Bienvenue, Léa' })).toBeInTheDocument();
+    // Tableau de bord de l'apprenant (écran Figma 18).
+    expect(await screen.findByRole('heading', { name: 'Bonjour Léa' })).toBeInTheDocument();
   });
 
   it('impose la configuration de la MFA obligatoire (RG-AUTH-03)', async () => {
