@@ -41,6 +41,8 @@ export const routes: RouteObject[] = [
         element: <GabaritConnecte />,
         children: [
           { path: '/mon-compte/securite', ...page(() => import('./auth/PageSecurite')) },
+          // Droits RGPD : accessibles à tout profil (RG-RGPD-02)
+          { path: '/rgpd/mes-donnees', ...page(() => import('./features/rgpd/PageMesDonnees')) },
           reserveA(
             ['ADMIN'],
             [
@@ -56,6 +58,11 @@ export const routes: RouteObject[] = [
                 path: '/admin/entreprises',
                 ...page(() => import('./features/admin/PageEntreprises')),
               },
+              {
+                path: '/admin/rgpd',
+                ...page(() => import('./features/rgpd/PageDemandesRgpd')),
+              },
+              { path: '/admin/journal', ...page(() => import('./features/rgpd/PageJournal')) },
               {
                 path: '/admin/parametres',
                 ...page(() => import('./features/admin/PageParametres')),
