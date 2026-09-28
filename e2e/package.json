@@ -1,0 +1,21 @@
+{
+  "name": "@formactiv/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tests de bout en bout (Playwright) et audit d'accessibilité automatisé (axe-core)",
+  "scripts": {
+    "test": "tsx preparer-base.ts && playwright test",
+    "test:ui": "playwright test --ui",
+    "rapport": "playwright show-report",
+    "lint": "eslint \"**/*.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "preparer-base": "tsx preparer-base.ts"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0",
+    "@prisma/client": "6.19.3",
+    "otplib": "12.0.1",
+    "tsx": "4.23.15"
+  }
+}
