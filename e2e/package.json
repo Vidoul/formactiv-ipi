@@ -4,7 +4,7 @@
   "private": true,
   "description": "Tests de bout en bout (Playwright) et audit d'accessibilité automatisé (axe-core)",
   "scripts": {
-    "test": "tsx preparer-base.ts && playwright test",
+    "e2e": "tsx preparer-base.ts && playwright test",
     "test:ui": "playwright test --ui",
     "rapport": "playwright show-report",
     "lint": "eslint \"**/*.ts\"",
