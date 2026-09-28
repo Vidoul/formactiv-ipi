@@ -45,15 +45,18 @@ export class FiltreExceptions implements ExceptionFilter {
     const requete = http.getRequest<Request>();
     const corps = normaliserException(exception);
     const idRequete = contexteRequete.courant()?.idRequete;
+    // Chemin sans paramètres : les URL signées ou jetons éventuels ne sont ni journalisés ni
+    // renvoyés (chapitre 10 : aucun secret dans les logs).
+    const chemin = requete.originalUrl.split('?')[0];
 
     if (corps.statusCode >= 500) {
       const pile = exception instanceof Error ? exception.stack : String(exception);
-      this.logger.error(`[${idRequete}] ${requete.method} ${requete.originalUrl} — ${pile}`);
+      this.logger.error(`[${idRequete}] ${requete.method} ${chemin} — ${pile}`);
     }
 
     reponse.status(corps.statusCode).json({
       ...corps,
-      chemin: requete.originalUrl,
+      chemin,
       horodatage: new Date().toISOString(),
       idRequete,
     });
