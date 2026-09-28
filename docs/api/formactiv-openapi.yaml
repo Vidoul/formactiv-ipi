@@ -54,7 +54,7 @@ paths:
                 $ref: '#/components/schemas/PageJournalDto'
       security:
         - jwt: []
-      summary: Consultation filtrée du journal (UC-15, RG-LOG-01)
+      summary: Consultation filtrée du journal (UC-15, US-32, RG-LOG-01)
       tags:
         - Journal d’audit
   /api/v1/parametres:
@@ -1763,7 +1763,7 @@ paths:
                 $ref: '#/components/schemas/TableauApprenantDto'
       security:
         - jwt: []
-      summary: Progression et prochaines échéances de l’apprenant (écran 18, US-24)
+      summary: Progression et prochaines échéances de l’apprenant (écran 18, US-26)
       tags:
         - Reporting et tableaux de bord
   /api/v1/reporting/salaries:
@@ -1811,7 +1811,7 @@ paths:
                 $ref: '#/components/schemas/PageSalariesDto'
       security:
         - jwt: []
-      summary: Salariés en formation et avancement synthétique (écran 21b, US-26)
+      summary: Salariés en formation et avancement synthétique (écran 21b, US-24)
       tags:
         - Reporting et tableaux de bord
   /api/v1/inscriptions/{id}/satisfaction:
@@ -1855,7 +1855,7 @@ paths:
                 $ref: '#/components/schemas/MesDonneesDto'
       security:
         - jwt: []
-      summary: 'Droit d’accès : données de l’utilisateur authentifié (US-28)'
+      summary: 'Droit d’accès : données de l’utilisateur authentifié (US-29)'
       tags:
         - RGPD
     patch:
@@ -1951,7 +1951,7 @@ paths:
                 $ref: '#/components/schemas/DemandeDto'
       security:
         - jwt: []
-      summary: 'Dépôt d’une demande : accès, rectification, suppression (US-30)'
+      summary: 'Dépôt d’une demande : accès, rectification, suppression (US-29, US-30)'
       tags:
         - RGPD
     get:

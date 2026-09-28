@@ -21,7 +21,7 @@ import { FiltresTableau, versFiltres, type SelectionFiltres } from './FiltresTab
 import { jourParis } from './periodes';
 
 /**
- * Écran Figma 21a — Suivi des formations de l'entreprise cliente (US-26) : indicateurs agrégés
+ * Écran Figma 21a — Suivi des formations de l'entreprise cliente (US-24) : indicateurs agrégés
  * limités à ses salariés (RG-DASH-02, minimisation RGPD) et exports (RG-EXP-01).
  */
 export default function PageTableauEntreprise() {

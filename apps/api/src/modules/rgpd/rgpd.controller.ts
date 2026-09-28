@@ -54,7 +54,7 @@ export class RgpdController {
 
   @Get('mes-donnees')
   @Authentifie()
-  @ApiOperation({ summary: 'Droit d’accès : données de l’utilisateur authentifié (US-28)' })
+  @ApiOperation({ summary: 'Droit d’accès : données de l’utilisateur authentifié (US-29)' })
   @ApiOkResponse({ type: MesDonneesDto })
   mesDonnees(@UtilisateurConnecte() acteur: UtilisateurAuthentifie) {
     return this.rgpd.mesDonnees(acteur);
@@ -109,7 +109,9 @@ export class RgpdController {
 
   @Post('demandes')
   @Authentifie()
-  @ApiOperation({ summary: 'Dépôt d’une demande : accès, rectification, suppression (US-30)' })
+  @ApiOperation({
+    summary: 'Dépôt d’une demande : accès, rectification, suppression (US-29, US-30)',
+  })
   @ApiCreatedResponse({ type: DemandeDto })
   creerDemande(
     @UtilisateurConnecte() acteur: UtilisateurAuthentifie,

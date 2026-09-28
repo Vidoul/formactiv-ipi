@@ -38,7 +38,7 @@ function objet(e: EntreeJournal): string {
 }
 
 /**
- * Écran Figma 08 — Journal des actions sensibles (UC-15, RG-LOG-01) : qui, quoi, quand, sur quel
+ * Écran Figma 08 — Journal des actions sensibles (UC-15, US-32, RG-LOG-01) : qui, quoi, quand, sur quel
  * objet. Consultation réservée à l'administrateur ; aucune donnée sensible dans les détails.
  */
 export default function PageJournal() {

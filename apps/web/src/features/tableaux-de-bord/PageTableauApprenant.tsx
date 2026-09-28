@@ -48,7 +48,7 @@ export function detailDocuments(d: TableauApprenant['documents']): string {
     .join(', ');
 }
 
-/** Écran Figma 18 — Mon tableau de bord : progression et prochaines échéances (US-24). */
+/** Écran Figma 18 — Mon tableau de bord : progression et prochaines échéances (US-26). */
 export default function PageTableauApprenant() {
   usePage('Mon tableau de bord');
   const moi = useUtilisateur();

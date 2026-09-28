@@ -63,7 +63,7 @@ export class ReportingController {
 
   @Get('reporting/apprenant')
   @Roles(CodeRole.APPRENANT)
-  @ApiOperation({ summary: 'Progression et prochaines échéances de l’apprenant (écran 18, US-24)' })
+  @ApiOperation({ summary: 'Progression et prochaines échéances de l’apprenant (écran 18, US-26)' })
   @ApiOkResponse({ type: TableauApprenantDto })
   apprenant(@UtilisateurConnecte() acteur: UtilisateurAuthentifie) {
     return this.reporting.apprenant(acteur);
@@ -72,7 +72,7 @@ export class ReportingController {
   @Get('reporting/salaries')
   @Roles(CodeRole.CLIENT_ENTREPRISE, CodeRole.ADMIN, CodeRole.RESP_FORMATION)
   @ApiOperation({
-    summary: 'Salariés en formation et avancement synthétique (écran 21b, US-26)',
+    summary: 'Salariés en formation et avancement synthétique (écran 21b, US-24)',
     description: 'Client entreprise : ses seuls salariés, sans note détaillée (minimisation).',
   })
   @ApiOkResponse({ type: PageSalariesDto })

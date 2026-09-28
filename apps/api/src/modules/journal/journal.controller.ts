@@ -14,7 +14,7 @@ export class JournalController {
   @Get()
   @Roles(CodeRole.ADMIN)
   @ApiOperation({
-    summary: 'Consultation filtrée du journal (UC-15, RG-LOG-01)',
+    summary: 'Consultation filtrée du journal (UC-15, US-32, RG-LOG-01)',
     description: 'Filtres utilisateur, action et période ; réservé à l’administrateur.',
   })
   @ApiOkResponse({ type: PageJournalDto })
