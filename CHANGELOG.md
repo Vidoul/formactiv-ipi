@@ -79,6 +79,11 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
 
 ### Corrigé
 
+- Intégration continue (premières exécutions sur GitHub) : l'image Docker de l'API ne se
+  construisait pas (script `prepare` de la racine exécuté par npm dans l'image) ; CodeQL manquait
+  de la permission `actions: read`. Actions mises à jour (fin des avertissements Node 20) et CI
+  exécutée sur toute branche poussée.
+
 - Accessibilité : les tableaux qui défilent horizontalement sur petit écran sont désormais
   atteignables au clavier (relevé par l'audit axe en affichage mobile).
 - Traçabilité : numéros de user stories alignés sur le dossier (US-24 client, US-26 apprenant,
@@ -91,6 +96,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) — versionnag
   spécification `docs/api/formactiv-openapi.yaml` couvre désormais toutes les routes.
 
 ### Sécurité
+
+- Dépendances : class-validator 0.15.1 et pdfkit 0.20.2 (Dependabot, #3).
 
 - Les erreurs serveur ne journalisent plus les paramètres d'URL (liens signés, jetons) : seul le
   chemin est conservé dans les logs et dans le corps d'erreur.
