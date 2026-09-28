@@ -36,7 +36,7 @@ export function libelleAvancement(l: LigneSalarie): string {
   return `${pourcentage} % - ${l.competencesAcquises}/${l.competencesVisees} compétences`;
 }
 
-/** Écran Figma 21b — Mes salariés apprenants (US-26, portée entreprise). */
+/** Écran Figma 21b — Mes salariés apprenants (US-24, portée entreprise). */
 export default function PageSalaries() {
   usePage('Mes salariés');
   const moi = useUtilisateur();
