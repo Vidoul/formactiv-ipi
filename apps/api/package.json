@@ -7,7 +7,7 @@
     "build": "nest build",
     "dev": "nest start --watch",
     "start": "node dist/main.js",
-    "lint": "eslint \"{src,test,prisma}/**/*.ts\"",
+    "lint": "eslint \"{src,test,prisma,scripts}/**/*.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "jest",
     "test:cov": "jest --coverage",
@@ -17,7 +17,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:reset": "prisma migrate reset --force",
     "db:seed": "prisma db seed",
-    "openapi:export": "tsx scripts/export-openapi.ts",
+    "openapi:export": "tsc -p tsconfig.scripts.json && node .scripts-build/scripts/export-openapi.js",
     "totp": "tsx scripts/totp.ts"
   },
   "devDependencies": {

@@ -5,6 +5,9 @@
  *   npm run openapi:export -w apps/api
  *
  * Aucune connexion à la base n'est nécessaire : seules les métadonnées des contrôleurs sont lues.
+ * Le script est compilé par tsc (tsconfig.scripts.json) : l'injection de dépendances de NestJS
+ * repose sur les métadonnées de décorateurs, que les transpileurs rapides (tsx/esbuild) n'émettent
+ * pas.
  */
 import '../test/setup-env';
 import { writeFileSync } from 'node:fs';
@@ -19,7 +22,8 @@ async function exporter(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ['error'] });
   app.setGlobalPrefix(PREFIXE_API);
   const document = creerDocumentOpenApi(app);
-  const cible = path.resolve(__dirname, '../../../docs/api/formactiv-openapi.yaml');
+  // Exécuté depuis apps/api (script npm du workspace).
+  const cible = path.resolve(process.cwd(), '../../docs/api/formactiv-openapi.yaml');
   const entete =
     '# Généré par `npm run openapi:export -w apps/api` — NE PAS MODIFIER À LA MAIN.\n' +
     '# Source de vérité : décorateurs @nestjs/swagger des contrôleurs de apps/api/src.\n';
