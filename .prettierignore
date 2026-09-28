@@ -5,6 +5,7 @@ build
 coverage
 storage
 playwright-report
+e2e/.stockage-e2e
 test-results
 package-lock.json
 apps/api/prisma/migrations/**/*.sql
