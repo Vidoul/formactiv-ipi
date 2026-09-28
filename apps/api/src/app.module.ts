@@ -11,7 +11,9 @@ import { DonneesSensiblesInterceptor } from './common/interceptors/donnees-sensi
 import { creerValidationPipe } from './common/validation';
 import { Environnement, validerEnvironnement } from './config/environnement';
 import { AuthModule } from './modules/auth/auth.module';
+import { CompetencesModule } from './modules/competences/competences.module';
 import { EntreprisesModule } from './modules/entreprises/entreprises.module';
+import { FormationsModule } from './modules/formations/formations.module';
 import { JournalModule } from './modules/journal/journal.module';
 import { MailModule } from './modules/mail/mail.module';
 import { ParametresModule } from './modules/parametres/parametres.module';
@@ -52,6 +54,8 @@ import { PrismaModule } from './prisma/prisma.module';
     AuthModule,
     UtilisateursModule,
     EntreprisesModule,
+    CompetencesModule,
+    FormationsModule,
   ],
   providers: [
     { provide: APP_PIPE, useFactory: creerValidationPipe },
