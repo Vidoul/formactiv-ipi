@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 
 export interface Colonne<T> {
   cle: string;
@@ -23,7 +23,9 @@ interface TableauProps<T> {
 
 /**
  * Tableau de données accessible (RGAA 5) : `<caption>`, en-têtes `<th scope>`, défilement
- * horizontal sur petit écran sans perte d'information (RGAA 10.11).
+ * horizontal sur petit écran sans perte d'information (RGAA 10.11). Lorsque le tableau déborde,
+ * son conteneur devient une région focalisable, nommée par la légende, pour permettre le
+ * défilement au clavier (RGAA 12.13, WCAG 2.1.1).
  */
 export function Tableau<T>({
   legende,
@@ -33,10 +35,37 @@ export function Tableau<T>({
   vide = 'Aucune donnée à afficher.',
   legendeMasquee = false,
 }: TableauProps<T>) {
+  const idLegende = useId();
+  const conteneur = useRef<HTMLDivElement>(null);
+  const [defilant, setDefilant] = useState(false);
+
+  useEffect(() => {
+    const element = conteneur.current;
+    if (!element) return;
+    const mesurer = () => setDefilant(element.scrollWidth > element.clientWidth + 1);
+    mesurer();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observateur = new ResizeObserver(mesurer);
+    observateur.observe(element);
+    if (element.firstElementChild) observateur.observe(element.firstElementChild);
+    return () => observateur.disconnect();
+  }, [lignes, colonnes.length]);
+
   return (
-    <div className="tableau-conteneur">
+    <div
+      ref={conteneur}
+      className="tableau-conteneur"
+      role={defilant ? 'region' : undefined}
+      aria-labelledby={defilant ? idLegende : undefined}
+      // Région défilante nommée : focalisable pour défiler au clavier (axe « scrollable-region-
+      // focusable »), motif que la règle jsx-a11y ne reconnaît pas lorsque le rôle est conditionnel.
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+      tabIndex={defilant ? 0 : undefined}
+    >
       <table className="tableau">
-        <caption className={legendeMasquee ? 'sr-only' : undefined}>{legende}</caption>
+        <caption id={idLegende} className={legendeMasquee ? 'sr-only' : undefined}>
+          {legende}
+        </caption>
         <thead>
           <tr>
             {colonnes.map((c) => (
