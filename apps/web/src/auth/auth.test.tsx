@@ -38,7 +38,8 @@ describe('Parcours de connexion (écran Figma 01, UC-01)', () => {
     const routeur = demarrer('/pilotage');
     expect(await screen.findByRole('heading', { name: 'FORMACTIV' })).toBeInTheDocument();
     expect(routeur.state.location.pathname).toBe('/connexion');
-    expect(document.title).toBe('Connexion — FORMACTIV');
+    // Titre posé par un effet de la page (chargée en différé) : il peut suivre le rendu du titre.
+    await waitFor(() => expect(document.title).toBe('Connexion — FORMACTIV'));
   });
 
   it("affiche le message générique de l'API en cas d'échec", async () => {
