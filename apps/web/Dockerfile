@@ -15,7 +15,7 @@ RUN npm ci --workspace @formactiv/web --include-workspace-root=false --ignore-sc
 COPY apps/web apps/web
 RUN npm run build -w @formactiv/web
 
-FROM nginxinc/nginx-unprivileged:1.29-alpine AS execution
+FROM nginxinc/nginx-unprivileged:1.31-alpine AS execution
 # Adresse de l'API (service Docker) injectée dans la configuration au démarrage (envsubst).
 ENV API_UPSTREAM=http://api:3000
 COPY apps/web/nginx/default.conf.template /etc/nginx/templates/default.conf.template
