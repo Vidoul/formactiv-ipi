@@ -35,10 +35,10 @@
   "devDependencies": {
     "@commitlint/cli": "19.8.1",
     "@commitlint/config-conventional": "19.8.1",
-    "concurrently": "9.2.4",
+    "concurrently": "9.2.5",
     "husky": "9.1.7",
     "lint-staged": "16.4.0",
-    "prettier": "3.9.9"
+    "prettier": "3.9.10"
   },
   "overrides": {
     "deepmerge-ts": "^8.0.0"
